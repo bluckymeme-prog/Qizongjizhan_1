@@ -49,7 +49,7 @@ const roleProfiles = {
         image: 'assets/images/barbarian com.png',
         skillName: '强韧体魄',
         description: '来自贺申共和国的冲锋士兵。他们英勇善战、不畏牺牲，拥有强大的肉体，却不擅长运用气的招式。对他们来说，斧子和刀或许更加管用。',
-        skill: '额外增加一点生命值，但开局气数量减少一点。'
+        skill: '额外增加一点生命值，开局拥有与其他职业相同的气，但无法使用圣盾。'
     },
     METAL_WARRIOR: {
         name: '金属武者',
@@ -91,13 +91,13 @@ class Player {
         this.reset();
     }
     reset() {
-        this.hp = 2; this.energy = 1; this.barrierCount = 1; this.swordCount = 1;        
+        this.hp = 3; this.energy = 2; this.barrierCount = 1; this.swordCount = 1;        
         this.swordState = 'NORMAL'; this.isParalyzed = false; this.nextTurnParalyze = false;
         this.currentAction = null; this.hasStolen = false; this.hasHealed = false;
         this.specialSwordCharges = 0;
         
         // 职业特性重载 (牧师、金属武者初始属性默认: 2血 1气 1刀 1盾)
-        if (this.role === 'BARBARIAN') { this.hp = 3; this.energy = 1; } 
+        if (this.role === 'BARBARIAN') { this.hp = 4; this.energy = 2; } 
         else if (this.role === 'PALADIN') { this.barrierCount = 2; } 
         else if (this.role === 'WARRIOR') { this.swordCount = 2; }
         
@@ -113,10 +113,10 @@ class Player {
         if (this.isParalyzed) return action === Action.CHARGE;
         switch (action) {
             case Action.CHARGE: return true;
-            case Action.SWORD: return this.swordCount > 0;
+            case Action.SWORD: return this.swordCount > 0 && this.swordState !== 'UNLOCKED';
             case Action.ICE_SWORD:
-            case Action.ELEC_SWORD: return this.swordState === 'UNLOCKED' && this.swordCount > 0;
-            case Action.FIRE: return this.energy >= 1;
+            case Action.ELEC_SWORD: return this.swordState === 'UNLOCKED' && this.swordCount > 0 && this.energy >= 1;
+            case Action.FIRE: return this.energy >= 2;
             case Action.LIGHTNING: return this.energy >= 4;
             case Action.BARRIER: return this.barrierCount > 0; 
             case Action.SHIELD: return true;
@@ -293,11 +293,11 @@ class Game {
         
         container.onclick = (e) => {
             const action = e.target.dataset.action;
-            if (!action || !this.playerA.canUse(action)) return;
-            if (action === 'SWORD' && this.playerA.swordState === 'UNLOCKED') {
+            if (action === 'SWORD' && this.playerA.swordState === 'UNLOCKED' && !this.playerA.isParalyzed) {
                 subContainer.classList.remove('hidden');
                 return;
             }
+            if (!action || !this.playerA.canUse(action)) return;
             this.lockAction(action, subContainer);
         };
 
@@ -457,7 +457,8 @@ class Game {
             buttons.forEach(btn => {
                 const action = btn.dataset.action;
                 if (action) {
-                    btn.disabled = pA.currentAction != null || !pA.canUse(action);
+                    const isSwordMenu = action === Action.SWORD && pA.swordState === 'UNLOCKED' && pA.swordCount > 0 && !pA.isParalyzed;
+                    btn.disabled = pA.currentAction != null || (!isSwordMenu && !pA.canUse(action));
                 }
             });
         } else {
@@ -472,7 +473,7 @@ class Game {
     }
 
     shouldElecParalyze(defenseAction) {
-        return ![Action.CHARGE, Action.ICE_SWORD, Action.SHIELD, Action.BARRIER, Action.HOLY_SHIELD, Action.STEAL, Action.MERCY_DEW].includes(defenseAction);
+        return defenseAction === Action.SWORD || defenseAction === Action.BARRIER;
     }
 
     resolveRound() {
@@ -513,7 +514,8 @@ class Game {
         } else if (actB === Action.STEAL) { specialLog += `🥷 CPU 施展【神偷】，但 ${pA.name} 未在集气，窃取失败（触发圣盾庇护）！\n`; }
 
         pA.energy += energyGainA; pB.energy += energyGainB;
-        if (actA === Action.FIRE) pA.energy -= 1; if (actB === Action.FIRE) pB.energy -= 1;
+        if (actA === Action.FIRE) pA.energy -= 2; if (actB === Action.FIRE) pB.energy -= 2;
+        if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(actA)) pA.energy -= 1; if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(actB)) pB.energy -= 1;
         if (actA === Action.LIGHTNING) pA.energy -= 4; if (actB === Action.LIGHTNING) pB.energy -= 4;
         if (actA === Action.HOLY_SHIELD) pA.energy -= 1; if (actB === Action.HOLY_SHIELD) pB.energy -= 1;
 
@@ -538,19 +540,17 @@ class Game {
             } else {
                 if (actA === Action.ICE_SWORD) {
                     if ([Action.FIRE, Action.LIGHTNING].includes(actB)) { effDmgA = 1; specialLog += `⚔️ ${pA.name}的冰刀破解打断了CPU的[${this.getActionName(actB)}]！\n`; }
-                    else if (![Action.SHIELD, Action.BARRIER].includes(actB)) effDmgA = 1; 
                 } else if (actA === Action.ELEC_SWORD) {
-                    if ([Action.FIRE, Action.LIGHTNING].includes(actB)) { paralyzeB = true; specialLog += `⚡ ${pA.name}的电刀打断了CPU的[${this.getActionName(actB)}]！\n`; }
-                    else if (![Action.SHIELD, Action.BARRIER].includes(actB)) { effDmgA = 1; }
+                    if (actB === Action.SWORD) { effDmgA = 1; specialLog += `⚡ ${pA.name}的电刀压制了CPU的普通刀！\n`; }
                     if (this.shouldElecParalyze(actB)) paralyzeB = true;
                 } else if (actA === Action.SWORD) {
-                    if (![Action.SHIELD, Action.BARRIER, Action.FIRE].includes(actB)) effDmgA = 1;
+                    if (![Action.SHIELD, Action.BARRIER, Action.FIRE, Action.ELEC_SWORD].includes(actB)) effDmgA = 1;
                 } else if (actA === Action.FIRE) {
                     if (actB === Action.BARRIER) specialLog += `🛡️ ${pA.name}的火冲被CPU的[屏障]抵挡！\n`;
-                    else if (![Action.ICE_SWORD, Action.ELEC_SWORD].includes(actB)) effDmgA = 1;
+                    else if (actB !== Action.ICE_SWORD) effDmgA = 2;
                 } else if (actA === Action.LIGHTNING) {
                     if (actB === Action.CHARGE) specialLog += `⚡ ${pA.name}引动狂雷，但CPU集气引导导电，狂雷落空！\n`;
-                    else if (![Action.ICE_SWORD, Action.ELEC_SWORD].includes(actB)) effDmgA = 3;
+                    else if (actB !== Action.ICE_SWORD) effDmgA = 3;
                 }
             }
 
@@ -560,19 +560,17 @@ class Game {
             } else {
                 if (actB === Action.ICE_SWORD) {
                     if ([Action.FIRE, Action.LIGHTNING].includes(actA)) { effDmgB = 1; specialLog += `⚔️ CPU的冰刀破解打断了${pA.name}的[${this.getActionName(actA)}]！\n`; }
-                    else if (![Action.SHIELD, Action.BARRIER].includes(actA)) effDmgB = 1;
                 } else if (actB === Action.ELEC_SWORD) {
-                    if ([Action.FIRE, Action.LIGHTNING].includes(actA)) { paralyzeA = true; specialLog += `⚡ CPU的电刀打断了${pA.name}的[${this.getActionName(actA)}]！\n`; }
-                    else if (![Action.SHIELD, Action.BARRIER].includes(actA)) { effDmgB = 1; }
+                    if (actA === Action.SWORD) { effDmgB = 1; specialLog += `⚡ CPU的电刀压制了${pA.name}的普通刀！\n`; }
                     if (this.shouldElecParalyze(actA)) paralyzeA = true;
                 } else if (actB === Action.SWORD) {
-                    if (![Action.SHIELD, Action.BARRIER, Action.FIRE].includes(actA)) effDmgB = 1;
+                    if (![Action.SHIELD, Action.BARRIER, Action.FIRE, Action.ELEC_SWORD].includes(actA)) effDmgB = 1;
                 } else if (actB === Action.FIRE) {
                     if (actA === Action.BARRIER) specialLog += `🛡️ CPU的火冲被${pA.name}的[屏障]抵挡！\n`;
-                    else if (![Action.ICE_SWORD, Action.ELEC_SWORD].includes(actA)) effDmgB = 1;
+                    else if (actA !== Action.ICE_SWORD) effDmgB = 2;
                 } else if (actB === Action.LIGHTNING) {
                     if (actA === Action.CHARGE) specialLog += `⚡ CPU引动狂雷，但${pA.name}集气引导导电，狂雷落空！\n`;
-                    else if (![Action.ICE_SWORD, Action.ELEC_SWORD].includes(actA)) effDmgB = 3;
+                    else if (actA !== Action.ICE_SWORD) effDmgB = 3;
                 }
             }
         }
@@ -623,6 +621,10 @@ class Game {
         if (isSwordA && actB === Action.BARRIER) { 
             pB.barrierCount--; 
             equipLog += `💥 ${pA.name}击碎了CPU的1层[屏障]！\n`; 
+            if (actA === Action.ELEC_SWORD) {
+                paralyzeB = true;
+                equipLog += `⚡ 电流沿着破碎屏障蔓延，CPU陷入麻痹！\n`;
+            }
             if (pB.role === 'METAL_WARRIOR') {
                 pB.swordCount++;
                 if (pB.swordState === 'BROKEN') pB.swordState = 'NORMAL';
@@ -632,6 +634,10 @@ class Game {
         if (isSwordB && actA === Action.BARRIER) { 
             pA.barrierCount--; 
             equipLog += `💥 CPU击碎了${pA.name}的1层[屏障]！\n`; 
+            if (actB === Action.ELEC_SWORD) {
+                paralyzeA = true;
+                equipLog += `⚡ 电流沿着破碎屏障蔓延，${pA.name}陷入麻痹！\n`;
+            }
             if (pA.role === 'METAL_WARRIOR') {
                 pA.swordCount++;
                 if (pA.swordState === 'BROKEN') pA.swordState = 'NORMAL';
@@ -1073,12 +1079,12 @@ Game.prototype.bindActionEvents = function() {
     container.onclick = (e) => {
         const action = e.target.dataset.action;
         const actor = this.currentHumanActor();
-        if (!action || !actor || !actor.canUse(action)) return;
-        if (action === Action.SWORD && actor.swordState === 'UNLOCKED') {
+        if (action === Action.SWORD && actor.swordState === 'UNLOCKED' && !actor.isParalyzed) {
             subContainer.classList.remove('hidden');
             targetPicker.classList.add('hidden');
             return;
         }
+        if (!action || !actor || !actor.canUse(action)) return;
         this.chooseTargetOrLock(actor, action, subContainer, targetPicker);
     };
 
@@ -1196,26 +1202,48 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
         if (target && value > 0 && !cpu.aiTargetIntents[action]) cpu.aiTargetIntents[action] = target.id;
     };
     const isHolyAction = action => [Action.HOLY_SHIELD, Action.STEAL, Action.MERCY_DEW].includes(action);
-    const canFireHit = target => target && target.currentAction !== Action.BARRIER && ![Action.ICE_SWORD, Action.ELEC_SWORD].includes(target.currentAction) && !isHolyAction(target.currentAction);
+    const canFireHit = target => target && target.currentAction !== Action.BARRIER && target.currentAction !== Action.ICE_SWORD && !isHolyAction(target.currentAction);
     const canSwordHit = target => target && ![Action.SHIELD, Action.BARRIER].includes(target.currentAction) && !isHolyAction(target.currentAction);
-    const canNormalSwordHit = target => canSwordHit(target) && (this.gameMode === '2v2' || target.currentAction !== Action.FIRE);
-    const canLightningHitHard = target => target && target.currentAction !== Action.CHARGE && ![Action.ICE_SWORD, Action.ELEC_SWORD].includes(target.currentAction);
+    const canNormalSwordHit = target => canSwordHit(target) && ![Action.FIRE, Action.ELEC_SWORD].includes(target.currentAction);
+    const canLightningHitHard = target => target && target.currentAction !== Action.CHARGE && target.currentAction !== Action.ICE_SWORD;
+    const awakenedOpponents = aliveOpponents.filter(player => player.swordState === 'UNLOCKED' && player.swordCount > 0);
+    const readySpecialSwordOpponents = awakenedOpponents.filter(player => player.energy >= 1 && !player.isParalyzed);
+    const fireCapableOpponents = aliveOpponents.filter(player => player.energy >= 2 && !player.isParalyzed);
+    const normalSwordCapableOpponents = aliveOpponents.filter(player => player.swordCount > 0 && player.swordState === 'NORMAL' && !player.isParalyzed);
     const weakestOpponent = aliveOpponents.slice().sort((a, b) => a.hp - b.hp || b.energy - a.energy)[0];
     const highestEnergyOpponent = aliveOpponents.slice().sort((a, b) => b.energy - a.energy || a.hp - b.hp)[0];
 
     if (this.cpuDifficulty === 'easy') {
-        if (validActions.includes(Action.CHARGE)) weights[Action.CHARGE] = cpu.energy < 2 ? 5 : 2;
-        if (validActions.includes(Action.SWORD)) weights[Action.SWORD] = 3;
-        if (validActions.includes(Action.FIRE)) weights[Action.FIRE] = 2;
+        if (validActions.includes(Action.CHARGE)) weights[Action.CHARGE] = cpu.energy < 1 ? 6 : 2;
+        if (validActions.includes(Action.SWORD)) weights[Action.SWORD] = cpu.swordState === 'NORMAL' ? 3 : 0;
+        if (validActions.includes(Action.ICE_SWORD)) weights[Action.ICE_SWORD] = cpu.swordState === 'UNLOCKED' ? 4 : 1;
+        if (validActions.includes(Action.ELEC_SWORD)) weights[Action.ELEC_SWORD] = cpu.swordState === 'UNLOCKED' ? 4 : 1;
+        if (validActions.includes(Action.FIRE)) weights[Action.FIRE] = cpu.energy >= 3 ? 2 : 1;
+        if (readySpecialSwordOpponents.length) {
+            addWeight(Action.SHIELD, 2);
+            addWeight(Action.HOLY_SHIELD, 2);
+        }
     } else if (this.cpuDifficulty === 'normal') {
         if (validActions.includes(Action.LIGHTNING)) weights[Action.LIGHTNING] = 5;
         if (validActions.includes(Action.FIRE)) weights[Action.FIRE] = 3;
         if (aliveOpponents.some(player => player.isParalyzed) && validActions.includes(Action.FIRE)) weights[Action.FIRE] = 8;
-        if (validActions.includes(Action.ICE_SWORD)) weights[Action.ICE_SWORD] = 4;
-        if (validActions.includes(Action.ELEC_SWORD)) weights[Action.ELEC_SWORD] = 4;
-        if (aliveOpponents.some(player => player.energy >= 4) && validActions.includes(Action.HOLY_SHIELD)) weights[Action.HOLY_SHIELD] = 8;
+        if (validActions.includes(Action.SWORD)) weights[Action.SWORD] = cpu.swordState === 'NORMAL' ? 4 : 0;
+        if (validActions.includes(Action.ICE_SWORD)) weights[Action.ICE_SWORD] = cpu.swordState === 'UNLOCKED' ? 8 : 4;
+        if (validActions.includes(Action.ELEC_SWORD)) weights[Action.ELEC_SWORD] = cpu.swordState === 'UNLOCKED' ? 8 : 4;
+        if (aliveOpponents.some(player => player.energy >= 4) && validActions.includes(Action.HOLY_SHIELD)) weights[Action.HOLY_SHIELD] = 4;
         if (validActions.includes(Action.STEAL)) weights[Action.STEAL] = 6;
         if (validActions.includes(Action.MERCY_DEW)) weights[Action.MERCY_DEW] = cpu.hp < cpu.maxHp ? 12 : 1;
+        if (readySpecialSwordOpponents.length) {
+            const target = readySpecialSwordOpponents[0];
+            setWeight(Action.SHIELD, 8);
+            if (fireCapableOpponents.length || cpu.role === 'PALADIN') setWeight(Action.HOLY_SHIELD, cpu.role === 'PALADIN' ? 5 : 3);
+            addWeight(Action.ELEC_SWORD, 4, target);
+            addWeight(Action.FIRE, 3, target);
+        }
+        if (!fireCapableOpponents.length && validActions.includes(Action.HOLY_SHIELD) && cpu.role !== 'PALADIN') {
+            weights[Action.HOLY_SHIELD] = Math.min(weights[Action.HOLY_SHIELD] || 0, 1);
+        }
+        if (cpu.swordState === 'UNLOCKED' && cpu.energy < 1) setWeight(Action.CHARGE, 9);
     }
 
     if (this.cpuDifficulty === 'hard' && aliveOpponents.length) {
@@ -1224,30 +1252,30 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
         const fireActors = aliveOpponents.filter(player => player.currentAction === Action.FIRE);
         const swordActors = aliveOpponents.filter(player => [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(player.currentAction));
         const lightningThreats = aliveOpponents.filter(player => player.energy >= 4 && !player.isParalyzed);
-        const unlockedSwordThreats = aliveOpponents.filter(player => player.swordState === 'UNLOCKED' && player.swordCount > 0);
+        const unlockedSwordThreats = readySpecialSwordOpponents;
+        const waitingAwakenedOpponents = awakenedOpponents.filter(player => player.energy < 1);
         const anyEnemyHasSword = aliveOpponents.some(player => player.swordCount > 0 && player.swordState !== 'BROKEN');
         const anyEnemyHasEnergy = aliveOpponents.some(player => player.energy > 0);
         const allEnemySwordsBroken = !anyEnemyHasSword;
 
-        const fireKillTarget = aliveOpponents.find(player => player.hp <= 1 && canFireHit(player));
-        const swordKillTarget = aliveOpponents.find(player => player.hp <= 1 && canSwordHit(player));
+        const fireKillTarget = aliveOpponents.find(player => player.hp <= 2 && canFireHit(player));
+        const iceKillTarget = aliveOpponents.find(player => player.hp <= 1 && [Action.FIRE, Action.LIGHTNING].includes(player.currentAction));
+        const elecKillTarget = aliveOpponents.find(player => player.hp <= 1 && player.currentAction === Action.SWORD);
         const normalSwordKillTarget = aliveOpponents.find(player => player.hp <= 1 && canNormalSwordHit(player));
         const lightningKillTargets = aliveOpponents.filter(player => player.hp <= (isHolyAction(player.currentAction) ? 1 : 3) && canLightningHitHard(player));
-        const hasLethal = lightningKillTargets.length > 0 || !!fireKillTarget || !!swordKillTarget || !!normalSwordKillTarget;
+        const hasLethal = lightningKillTargets.length > 0 || !!fireKillTarget || !!iceKillTarget || !!elecKillTarget || !!normalSwordKillTarget;
 
         if (lightningKillTargets.length) setWeight(Action.LIGHTNING, 95);
         if (fireKillTarget) setWeight(Action.FIRE, 90, fireKillTarget);
-        if (swordKillTarget) {
-            setWeight(Action.ELEC_SWORD, 88, swordKillTarget);
-            setWeight(Action.ICE_SWORD, 84, swordKillTarget);
-        }
+        if (elecKillTarget) setWeight(Action.ELEC_SWORD, 88, elecKillTarget);
+        if (iceKillTarget) setWeight(Action.ICE_SWORD, 84, iceKillTarget);
         if (normalSwordKillTarget) setWeight(Action.SWORD, 72, normalSwordKillTarget);
 
         if (chargingTargets.length) {
             if (!hasLethal) setWeight(Action.STEAL, 85, chargingTargets[0]);
             addWeight(Action.FIRE, 18, chargingTargets[0]);
             addWeight(Action.SWORD, 12, chargingTargets[0]);
-            addWeight(Action.ELEC_SWORD, 14, chargingTargets[0]);
+            addWeight(Action.ICE_SWORD, 4, chargingTargets[0]);
             if (validActions.includes(Action.BARRIER)) weights[Action.BARRIER] = 0;
             if (validActions.includes(Action.SHIELD)) weights[Action.SHIELD] = 0;
         }
@@ -1256,31 +1284,36 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
             const target = lightningActors[0] || lightningThreats[0];
             setWeight(Action.CHARGE, lightningActors.length ? 80 : 38);
             setWeight(Action.ICE_SWORD, lightningActors.length ? 76 : 34, target);
-            setWeight(Action.ELEC_SWORD, lightningActors.length ? 76 : 34, target);
-            setWeight(Action.HOLY_SHIELD, lightningActors.length ? 28 : 14);
+            setWeight(Action.HOLY_SHIELD, lightningActors.length && cpu.hp > 1 ? 12 : 4);
             if (validActions.includes(Action.BARRIER)) weights[Action.BARRIER] = 0;
             if (validActions.includes(Action.SHIELD)) weights[Action.SHIELD] = 0;
         }
 
         if (fireActors.length) {
             setWeight(Action.BARRIER, 34);
-            setWeight(Action.HOLY_SHIELD, 32);
+            setWeight(Action.HOLY_SHIELD, 22);
             addWeight(Action.ICE_SWORD, 18, fireActors[0]);
-            addWeight(Action.ELEC_SWORD, 18, fireActors[0]);
-        } else if (highestEnergyOpponent?.energy >= 1) {
+        } else if (highestEnergyOpponent?.energy >= 2) {
             addWeight(Action.BARRIER, 8);
-            addWeight(Action.HOLY_SHIELD, 8);
+            addWeight(Action.HOLY_SHIELD, 3);
         }
 
         if (swordActors.length || unlockedSwordThreats.length) {
             const target = swordActors[0] || unlockedSwordThreats[0];
-            if (target.energy >= 1) {
-                setWeight(Action.HOLY_SHIELD, 30);
-                addWeight(Action.SHIELD, 3);
+            if (target.energy >= 1 || [Action.ICE_SWORD, Action.ELEC_SWORD].includes(target.currentAction)) {
+                setWeight(Action.SHIELD, 24);
+                if (cpu.role === 'PALADIN' && target.currentAction === Action.SWORD) setWeight(Action.HOLY_SHIELD, 20);
+                if (target.currentAction === Action.SWORD) addWeight(Action.ELEC_SWORD, 24, target);
             } else {
-                setWeight(Action.SHIELD, 26);
-                addWeight(Action.HOLY_SHIELD, 8);
+                addWeight(Action.SHIELD, 6);
+                if (cpu.role === 'PALADIN') addWeight(Action.HOLY_SHIELD, 4);
             }
+        }
+        if (waitingAwakenedOpponents.length) {
+            const target = waitingAwakenedOpponents[0];
+            addWeight(Action.STEAL, 18, target);
+            addWeight(Action.FIRE, 10, target);
+            if (validActions.includes(Action.SHIELD)) weights[Action.SHIELD] = Math.min(weights[Action.SHIELD] || 0, 3);
         }
 
         if (allEnemySwordsBroken && validActions.includes(Action.SHIELD)) weights[Action.SHIELD] = 0;
@@ -1288,15 +1321,28 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
             if (validActions.includes(Action.HOLY_SHIELD)) weights[Action.HOLY_SHIELD] = 0;
             if (validActions.includes(Action.BARRIER) && !(cpu.role === 'METAL_WARRIOR' && cpu.swordCount <= 0)) weights[Action.BARRIER] = 0;
         }
+        if (!fireCapableOpponents.length && !lightningActors.length && !fireActors.length && !normalSwordCapableOpponents.length && cpu.role !== 'PALADIN') {
+            if (validActions.includes(Action.HOLY_SHIELD)) weights[Action.HOLY_SHIELD] = 0;
+        } else if (!fireCapableOpponents.length && !lightningActors.length && !fireActors.length && cpu.role !== 'PALADIN') {
+            if (validActions.includes(Action.HOLY_SHIELD)) weights[Action.HOLY_SHIELD] = Math.min(weights[Action.HOLY_SHIELD] || 0, 2);
+        }
 
         if (cpu.swordState === 'UNLOCKED') {
             const pressureTarget = weakestOpponent || highestEnergyOpponent;
-            addWeight(Action.FIRE, 12, pressureTarget);
-            addWeight(Action.ICE_SWORD, 10, pressureTarget);
-            addWeight(Action.ELEC_SWORD, 12, pressureTarget);
+            if (cpu.energy < 1) {
+                setWeight(Action.CHARGE, 50);
+            } else {
+                const spellTarget = fireActors[0] || lightningActors[0] || pressureTarget;
+                const swordTarget = swordActors.find(player => player.currentAction === Action.SWORD)
+                    || aliveOpponents.find(player => player.currentAction === Action.BARRIER)
+                    || pressureTarget;
+                addWeight(Action.ICE_SWORD, (fireActors.length || lightningActors.length) ? 40 : 24, spellTarget);
+                addWeight(Action.ELEC_SWORD, swordTarget?.currentAction === Action.SWORD || swordTarget?.currentAction === Action.BARRIER ? 38 : 18, swordTarget);
+                addWeight(Action.FIRE, 8, pressureTarget);
+            }
         }
 
-        if (cpu.energy === 0 && !chargingTargets.length) addWeight(Action.CHARGE, 16);
+        if (cpu.energy < 2 && !chargingTargets.length) addWeight(Action.CHARGE, 16);
         if (validActions.includes(Action.MERCY_DEW)) {
             const woundedAlly = aliveAllies.slice().sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp))[0];
             if (woundedAlly && woundedAlly.hp < woundedAlly.maxHp) {
@@ -1349,14 +1395,19 @@ Game.prototype.pickCpuTarget = function(cpu, action, opponents, allies) {
             || null;
     }
 
-    if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(action)) {
+    if (action === Action.ICE_SWORD) {
         return opponents.find(player => [Action.FIRE, Action.LIGHTNING, Action.CHARGE].includes(player.currentAction))
+            || opponents.slice().sort((a, b) => a.hp - b.hp || b.energy - a.energy)[0]
+            || null;
+    }
+    if (action === Action.ELEC_SWORD) {
+        return opponents.find(player => [Action.SWORD, Action.BARRIER].includes(player.currentAction))
             || opponents.slice().sort((a, b) => a.hp - b.hp || b.energy - a.energy)[0]
             || null;
     }
 
     if (action === Action.FIRE) {
-        return opponents.find(player => player.hp <= 1 && player.currentAction !== Action.BARRIER)
+        return opponents.find(player => player.hp <= 2 && player.currentAction !== Action.BARRIER && player.currentAction !== Action.ICE_SWORD)
             || opponents.slice().sort((a, b) => a.hp - b.hp || b.energy - a.energy)[0]
             || null;
     }
@@ -1408,7 +1459,10 @@ Game.prototype.updateUI = function() {
     document.getElementById('heal-btn-a').style.display = actor?.role === 'PRIEST' ? 'inline-block' : 'none';
     document.querySelectorAll('#control-panel button.action-btn').forEach(btn => {
         const action = btn.dataset.action;
-        if (action) btn.disabled = !actor || !!this.battleResult || !actor.canUse(action);
+        if (action) {
+            const isSwordMenu = action === Action.SWORD && actor?.swordState === 'UNLOCKED' && actor.swordCount > 0 && !actor.isParalyzed;
+            btn.disabled = !actor || !!this.battleResult || (!isSwordMenu && !actor.canUse(action));
+        }
     });
 };
 
@@ -1443,7 +1497,8 @@ Game.prototype.resolveTeamRound = function() {
     allActors.forEach(actor => {
         const action = actor.currentAction;
         if (action === Action.CHARGE && !stolenCharge.has(actor.id)) actor.energy += 1;
-        if (action === Action.FIRE) actor.energy -= 1;
+        if (action === Action.FIRE) actor.energy -= 2;
+        if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(action)) actor.energy -= 1;
         if (action === Action.LIGHTNING) actor.energy -= 4;
         if (action === Action.HOLY_SHIELD) actor.energy -= 1;
         if (action === Action.MERCY_DEW) {
@@ -1507,7 +1562,7 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
             ? `⚡ ${this.playerLabel(actor)} 的【狂雷】击穿圣盾，对 ${this.playerLabel(target)} 造成 1 点余波伤害。\n`
             : `🛡 ${this.playerLabel(target)} 的圣盾化解了 ${this.playerLabel(actor)} 的【${this.getActionName(action)}】。\n`;
     } else if (action === Action.LIGHTNING) {
-        if (defense === Action.CHARGE || [Action.ICE_SWORD, Action.ELEC_SWORD].includes(defense)) {
+        if (defense === Action.CHARGE || defense === Action.ICE_SWORD) {
             log += `⚡ ${this.playerLabel(actor)} 的【狂雷】被 ${this.playerLabel(target)} 避开或打断。\n`;
         } else {
             damage = 3;
@@ -1515,10 +1570,10 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
     } else if (action === Action.FIRE) {
         if (defense === Action.BARRIER) {
             log += `🛡 ${this.playerLabel(target)} 的屏障挡下了火冲。\n`;
-        } else if (![Action.ICE_SWORD, Action.ELEC_SWORD].includes(defense)) {
-            damage = 1;
+        } else if (defense !== Action.ICE_SWORD) {
+            damage = 2;
         }
-    } else if ([Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(action)) {
+    } else if (action === Action.SWORD) {
         if (defense === Action.SHIELD && action === Action.SWORD) {
             actor.swordCount -= 1;
             if (actor.swordCount <= 0) { actor.swordState = 'BROKEN'; actor.specialSwordCharges = 0; }
@@ -1535,12 +1590,36 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
             log += `💥 ${this.playerLabel(actor)} 击碎了 ${this.playerLabel(target)} 的 1 层屏障。\n`;
             return log;
         }
-        if (defense !== Action.SHIELD) {
+        if (defense !== Action.SHIELD && defense !== Action.ELEC_SWORD) {
             damage = 1;
-            if (action === Action.ELEC_SWORD && this.shouldElecParalyze(defense)) {
-                target.nextTurnParalyze = true;
-                log += `⚡ ${this.playerLabel(target)} 陷入麻痹状态。\n`;
+        }
+    } else if (action === Action.ICE_SWORD) {
+        if ([Action.FIRE, Action.LIGHTNING].includes(defense)) {
+            damage = 1;
+            log += `❄ ${this.playerLabel(actor)} 的冰刀破解了 ${this.playerLabel(target)} 的【${this.getActionName(defense)}】。\n`;
+        } else if (defense === Action.BARRIER) {
+            target.barrierCount -= 1;
+            if (target.role === 'METAL_WARRIOR') {
+                target.swordCount += 1;
+                if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
             }
+            log += `💥 ${this.playerLabel(actor)} 的冰刀击碎了 ${this.playerLabel(target)} 的 1 层屏障。\n`;
+            return log;
+        }
+    } else if (action === Action.ELEC_SWORD) {
+        if (defense === Action.SWORD) {
+            damage = 1;
+            target.nextTurnParalyze = true;
+            log += `⚡ ${this.playerLabel(actor)} 的电刀压制了 ${this.playerLabel(target)} 的普通刀，并造成麻痹。\n`;
+        } else if (defense === Action.BARRIER) {
+            target.barrierCount -= 1;
+            target.nextTurnParalyze = true;
+            if (target.role === 'METAL_WARRIOR') {
+                target.swordCount += 1;
+                if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
+            }
+            log += `💥⚡ ${this.playerLabel(actor)} 的电刀击碎了 ${this.playerLabel(target)} 的 1 层屏障，并造成麻痹。\n`;
+            return log;
         }
     }
 
@@ -1627,14 +1706,14 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentTutStep = 0;
 
     const tutSteps = [
-        { text: "双方每回合都选择一个招式进行对抗，招式为同时释放。", anim: `<div class="tut-flex"><div class="tut-icon anim-clash-l">🤺</div><div style="color:#ffcc00; font-weight:bold;">VS</div><div class="tut-icon anim-clash-r">🤖</div></div>` },
-        { text: "1. ❤是生命值，代表你能承受伤害的量；气是你释放强大技能所需的能量值。", anim: `<div class="tut-flex"><div class="tut-item"><span class="icon heart tut-icon">❤️</span><span>生命值</span></div><div class="tut-item"><span class="energy-circle tut-energy anim-block"></span><span>气 (能量)</span></div></div>` },
-        { text: "2. 火冲和狂雷是大赛规定固定技能，这些技能要消耗气；而【集气】能够让你在安全距离积攒一点气。", anim: `<div class="tut-flex"><div class="tut-item anim-slide-r"><span class="tut-icon">💤</span><span>集气(+1气)</span></div><div class="tut-item anim-slide-l"><span class="tut-icon">🔥/⚡</span><span>消耗气</span></div></div>` },
-        { text: "3. 一点气就能放出强大的火冲，造成一点伤害。而狂雷是一个极为强大的法术，需消耗四点气，能造成足足三点伤害！", anim: `<div class="tut-flex"><div class="tut-item"><span class="tut-icon">🔥</span><span>1气=1伤</span></div><div class="tut-item"><span class="tut-icon anim-strike" style="color:yellow;text-shadow:0 0 5px red;">⚡</span><span>4气=3伤</span></div></div>` },
-        { text: "4. 为了抵挡火冲，你需要出动【屏障】，能完美抵挡火冲。而对于狂雷来说，你只需要【集气】就行了（集气时能把雷电引导入地底）。", anim: `<div class="tut-flex"><span class="tut-icon anim-clash-l">🔥</span><span class="tut-icon anim-block" style="font-size:40px;">🛡️</span><span style="margin:0 10px;">|</span><span class="tut-icon anim-strike">⚡</span><span class="tut-icon">💤</span></div>` },
-        { text: "5. 你可以使用武器【普通刀】(不耗气)。使用后下一轮将觉醒为元素刀刃：【冰刀】能直接破解火冲/狂雷并造成一伤；【电刀】能麻痹对手，使其下回合只能乖乖集气。", anim: `<div class="tut-flex"><span class="tut-icon">🗡️</span><span style="color:#aaa;">➞</span><span class="tut-icon anim-block" style="filter: hue-rotate(180deg);">❄️</span><span class="tut-icon anim-block" style="filter: hue-rotate(280deg);">⚡</span></div>` },
-        { text: "6. 你的刀能粉碎对手的【屏障】(使其永久失效)。但要小心，对手的【盾牌】能永久粉碎你的普通刀！强大的元素刀不会被碎，但也无法穿透盾牌。", anim: `<div class="tut-flex"><span class="tut-icon anim-clash-l">🗡️</span><span class="tut-icon anim-shatter">🛡️(屏障)</span><span style="margin:0 10px;">|</span><span class="tut-icon anim-shatter">🗡️</span><span class="tut-icon anim-clash-r">🛡️(盾牌)</span></div>` },
-        { text: "7. 别忘了【圣盾】(耗1气)，它能完美抵挡刀和火冲的攻击。但是小心，强大的狂雷能击穿圣盾对你造成一点真实伤害！", anim: `<div class="tut-flex"><span class="tut-icon anim-clash-l">🗡️/🔥</span><span class="tut-icon anim-block" style="font-size:40px;">✨</span><span style="margin:0 10px;">|</span><span class="tut-icon anim-strike">⚡</span><span class="tut-icon anim-shatter">✨</span></div>` }
+        { text: "欢迎来到十字星大赛。每个回合，双方都会同时选择一个招式，胜负往往藏在你对下一步的判断里。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-clash-l"><strong>你</strong>出招</div><div style="color:#ffcc00; font-weight:bold;">VS</div><div class="tut-skill-card anim-clash-r"><strong>敌</strong>出招</div></div><div class="tut-demo-character"><div class="tut-sprite idle"></div></div></div>` },
+        { text: "先看基础：红心是生命值，气是释放强力招式的资源。现在所有职业开局都有更多生命和气，节奏会更主动。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card"><strong>❤</strong>生命</div><div class="tut-skill-card"><strong>●</strong>气</div></div><div class="tut-demo-character"><div class="tut-sprite idle"></div></div></div>` },
+        { text: "集气可以增加一点气。它不是攻击，但能规避狂雷，也是准备火冲、圣盾和元素刀的重要手段。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-block"><strong>+1</strong>集气</div><div class="tut-skill-card"><strong>●</strong>积攒资源</div></div><div class="tut-demo-character"><div class="tut-sprite charge"></div></div></div>` },
+        { text: "火冲消耗两点气，造成两点伤害；狂雷消耗四点气，造成三点伤害。火冲更适合抓破绽，狂雷适合逼迫对手防守。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-slide-r"><strong>🔥</strong>2气 / 2伤</div><div class="tut-skill-card anim-strike"><strong>⚡</strong>4气 / 3伤</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
+        { text: "屏障能抵挡火冲，集气能避开狂雷。盾牌主要用来防刀，但不会击碎冰刀和电刀。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-clash-l"><strong>🔥</strong>火冲</div><div class="tut-skill-card anim-block"><strong>🛡</strong>屏障</div><div class="tut-skill-card anim-strike"><strong>⚡</strong>狂雷</div><div class="tut-skill-card"><strong>●</strong>集气</div></div><div class="tut-demo-character"><div class="tut-sprite shield"></div></div></div>` },
+        { text: "普通刀不耗气。使用普通刀后会进入觉醒状态；觉醒状态下不能再普通刀，下一次出刀必须选择冰刀或电刀。中途可以先用非刀技能。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card"><strong>🗡</strong>普通刀</div><span style="color:#aaa;">➜</span><div class="tut-skill-card"><strong>❄</strong>冰刀</div><div class="tut-skill-card"><strong>⚡</strong>电刀</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
+        { text: "冰刀和电刀都消耗一点气。冰刀克制火冲和狂雷，造成一点伤害；电刀克制普通刀，造成一点伤害并麻痹，击碎屏障也会麻痹，但不会麻痹集气、冰刀、电刀、火冲和狂雷。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-block"><strong>❄</strong>破火冲/狂雷</div><div class="tut-skill-card anim-block"><strong>⚡</strong>抓普通刀/屏障</div><div class="tut-skill-card"><strong>1</strong>消耗气</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
+        { text: "圣盾消耗一点气，能挡刀和火冲；牧师的慈露、盗贼的神偷也会视作自身使用圣盾。记住这些克制关系，你就能开始读招了。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card"><strong>✨</strong>圣盾</div><div class="tut-skill-card"><strong>💧</strong>慈露</div><div class="tut-skill-card"><strong>🕵</strong>神偷</div></div><div class="tut-demo-character"><div class="tut-sprite shield"></div></div></div>` }
     ];
 
     function updateTutStep() {

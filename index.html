@@ -11,19 +11,27 @@
     <div id="game-container">
 
         <!-- ================= 玩法介绍弹窗 ================= -->
-        <div id="tutorial-modal" class="overlay hidden" style="z-index: 1002; background: rgba(0,0,0,0.95);">
-            <div class="tutorial-content" style="width: 85%; max-width: 400px; background: #222; padding: 20px; border-radius: 12px; border: 2px solid #4CAF50; display: flex; flex-direction: column; align-items: center;">
-                <h3 style="color: #4CAF50; margin-top: 0; margin-bottom: 15px;">玩法教学 (<span id="tut-step-counter">1/8</span>)</h3>
-                
-                <div id="tutorial-animation-box" class="tut-anim-box"></div>
-                
-                <p id="tutorial-text" class="story-text" style="font-size: 15px; min-height: 110px; width: 100%; box-sizing: border-box; text-align: left; background: none; padding: 0;"></p>
-                
-                <div style="display: flex; gap: 10px; width: 100%;">
-                    <button id="tut-prev-btn" class="start-btn" style="flex:1; background: #555; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">上一步</button>
-                    <button id="tut-next-btn" class="start-btn" style="flex:1; background: #4CAF50; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">下一步</button>
+        <div id="tutorial-modal" class="overlay hidden tutorial-overlay">
+            <div class="tutorial-stage">
+                <div class="tutorial-animation-panel">
+                    <div class="tutorial-title-row">
+                        <span>牧师的战斗教导</span>
+                        <span id="tut-step-counter">1 / 8</span>
+                    </div>
+                    <div id="tutorial-animation-box" class="tut-anim-box"></div>
                 </div>
-                <button id="tut-close-btn" class="start-btn" style="width: 100%; background: #d9534f; color: #fff; margin-top: 10px; height: 40px; line-height: 40px; font-size: 14px;">跳过/关闭</button>
+
+                <img class="tutorial-priest-portrait" src="assets/images/priest com.png" alt="牧师">
+
+                <div class="tutorial-dialogue">
+                    <div class="tutorial-speaker">牧师</div>
+                    <p id="tutorial-text"></p>
+                    <div class="tutorial-controls">
+                        <button id="tut-prev-btn" class="start-btn" type="button">上一步</button>
+                        <button id="tut-next-btn" class="start-btn" type="button">下一步</button>
+                        <button id="tut-close-btn" class="start-btn" type="button">关闭</button>
+                    </div>
+                </div>
             </div>
         </div>
 

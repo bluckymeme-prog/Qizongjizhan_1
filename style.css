@@ -344,15 +344,220 @@ body {
 }
 @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-/* ================= 玩法介绍动画特效 ================= */
-.tut-anim-box {
-    width: 100%; height: 120px; background: #111; border-radius: 8px; 
-    margin-bottom: 15px; display: flex; justify-content: center; align-items: center;
-    position: relative; overflow: hidden; border: 1px solid #333;
+/* ================= 玩法介绍：牧师教导 ================= */
+.tutorial-overlay {
+    z-index: 1002;
+    background:
+        linear-gradient(180deg, rgba(10, 12, 24, 0.92), rgba(8, 6, 14, 0.96)),
+        url("assets/images/arane 1.jpg") center bottom / cover no-repeat;
+    align-items: stretch;
+    justify-content: center;
 }
+.tutorial-stage {
+    position: relative;
+    width: min(920px, 100%);
+    height: 100%;
+    min-height: 560px;
+    padding: 34px 28px 28px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: minmax(280px, 46%) 1fr;
+    overflow: hidden;
+}
+.tutorial-animation-panel {
+    width: min(680px, 92%);
+    justify-self: center;
+    align-self: start;
+    padding: 14px;
+    border: 2px solid rgba(255, 216, 112, 0.78);
+    border-radius: 8px;
+    background: rgba(15, 16, 24, 0.82);
+    box-shadow: 0 16px 34px rgba(0,0,0,0.35);
+}
+.tutorial-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #ffe08a;
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+.tut-anim-box {
+    width: 100%;
+    min-height: 242px;
+    background: linear-gradient(180deg, #171b25, #0f1118);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.tut-demo {
+    width: 100%;
+    min-height: 224px;
+    display: grid;
+    grid-template-rows: minmax(72px, 0.9fr) 136px;
+    align-items: center;
+    justify-items: center;
+    gap: 10px;
+}
+.tut-demo-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    width: 100%;
+    min-height: 72px;
+}
+.tut-demo-character {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    min-height: 136px;
+}
+.tutorial-priest-portrait {
+    position: absolute;
+    left: clamp(-86px, -8vw, -42px);
+    bottom: -20px;
+    width: min(38vw, 330px);
+    max-height: 70%;
+    object-fit: contain;
+    object-position: bottom left;
+    filter: drop-shadow(0 18px 16px rgba(0,0,0,0.5));
+    z-index: 2;
+}
+.tutorial-dialogue {
+    position: absolute;
+    left: clamp(210px, 10vw, 305px);
+    right: 14px;
+    bottom: 18px;
+    width: auto;
+    min-height: 176px;
+    padding: 18px 18px 16px;
+    box-sizing: border-box;
+    border: 4px solid #171717;
+    border-radius: 8px;
+    background:
+        linear-gradient(#fffdf4, #fff8e6) padding-box,
+        linear-gradient(135deg, #4a2a12, #d8b45f 18%, #fff0a8 32%, #7b4b1f 58%, #f1d27a 78%, #3b210d) border-box;
+    color: #171717;
+    box-shadow:
+        inset 0 0 0 2px #f3d98b,
+        inset 0 0 0 5px rgba(74, 42, 18, 0.22),
+        0 12px 0 rgba(0,0,0,0.28),
+        0 18px 34px rgba(0,0,0,0.38);
+    z-index: 3;
+}
+.tutorial-dialogue::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(74, 42, 18, 0.42);
+    border-radius: 4px;
+    pointer-events: none;
+}
+.tutorial-dialogue::before {
+    content: "";
+    position: absolute;
+    left: -18px;
+    bottom: 44px;
+    width: 28px;
+    height: 28px;
+    background: #fff8e6;
+    border-left: 4px solid #171717;
+    border-bottom: 4px solid #171717;
+    transform: rotate(45deg);
+}
+.tutorial-speaker {
+    display: inline-block;
+    min-width: 72px;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+    border: 2px solid #171717;
+    border-radius: 4px;
+    background: #171717;
+    color: #ffe08a;
+    font-weight: 900;
+    text-align: center;
+}
+#tutorial-text {
+    min-height: 76px;
+    margin: 0 0 14px;
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 700;
+}
+.tutorial-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.9fr;
+    gap: 10px;
+    width: min(430px, 100%);
+    margin-left: 0;
+    margin-right: auto;
+}
+.tutorial-controls .start-btn {
+    width: 100%;
+    min-height: 48px;
+    height: auto;
+    line-height: 1.15;
+    margin: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+    letter-spacing: 0;
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+#tut-prev-btn { background: #555; color: #fff; }
+#tut-next-btn { background: #4CAF50; color: #fff; }
+#tut-close-btn { background: #d9534f; color: #fff; }
 .tut-flex { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 24px;}
 .tut-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #aaa; }
 .tut-icon { font-size: 32px; margin-bottom: 5px; }
+.tut-sprite {
+    width: 128px;
+    height: 128px;
+    flex: 0 0 128px;
+    background-repeat: no-repeat;
+    background-size: 640px 384px;
+    background-image: url("assets/images/priest sprite transparent.png");
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.35));
+}
+.tut-demo-character .tut-sprite {
+    transform: scale(1.08);
+    transform-origin: bottom center;
+}
+.tut-sprite.charge {
+    background-image: url("assets/images/priest sprite 2 transparent.png");
+    animation: priest-charge-frames 500ms linear infinite;
+}
+.tut-sprite.attack { animation: priest-attack-frames 500ms linear infinite; }
+.tut-sprite.shield { animation: priest-shield-frames 500ms linear infinite; }
+.tut-sprite.idle { animation: priest-idle-frames 500ms linear infinite; }
+.tut-skill-card {
+    min-width: 70px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,224,138,0.45);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.07);
+    color: #f3f0e6;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+}
+.tut-skill-card strong {
+    display: block;
+    color: #ffe08a;
+    font-size: 22px;
+    line-height: 1.1;
+}
 
 @keyframes slideRight { 0% { transform: translateX(-30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
 @keyframes slideLeft { 0% { transform: translateX(30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
@@ -370,6 +575,50 @@ body {
 .anim-block { animation: shield-block 1s infinite; }
 .anim-strike { animation: strike-down 1s infinite; }
 .tut-energy { width: 20px; height: 20px; }
+
+@media (max-width: 720px) {
+    .tutorial-stage {
+        min-height: 100%;
+        padding: 18px 14px;
+        grid-template-rows: 300px 1fr;
+    }
+    .tutorial-animation-panel {
+        width: 100%;
+        padding: 10px;
+    }
+    .tut-anim-box {
+        min-height: 236px;
+    }
+    .tut-demo {
+        min-height: 218px;
+        grid-template-rows: minmax(78px, 1fr) 126px;
+    }
+    .tutorial-priest-portrait {
+        width: 210px;
+        left: -64px;
+        bottom: 72px;
+        max-height: 52%;
+        transform: none; 
+    }
+    .tutorial-dialogue {
+        left: 96px;
+        right: 12px;
+        bottom: 16px;
+        width: auto;
+        min-height: 210px;
+        padding: 14px;
+    }
+    #tutorial-text {
+        font-size: 14px;
+        line-height: 1.55;
+    }
+    .tutorial-controls {
+        grid-template-columns: 1fr 1fr;
+    }
+    #tut-close-btn {
+        grid-column: 1 / -1;
+    }
+}
 
 /* ================= 战斗画面区 ================= */
 #battle-scene {
