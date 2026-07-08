@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>打集吧 CPU - H5网页版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <div id="game-container">
+
+        <!-- ================= 玩法介绍弹窗 ================= -->
+        <div id="tutorial-modal" class="overlay hidden" style="z-index: 1002; background: rgba(0,0,0,0.95);">
+            <div class="tutorial-content" style="width: 85%; max-width: 400px; background: #222; padding: 20px; border-radius: 12px; border: 2px solid #4CAF50; display: flex; flex-direction: column; align-items: center;">
+                <h3 style="color: #4CAF50; margin-top: 0; margin-bottom: 15px;">玩法教学 (<span id="tut-step-counter">1/8</span>)</h3>
+                
+                <div id="tutorial-animation-box" class="tut-anim-box"></div>
+                
+                <p id="tutorial-text" class="story-text" style="font-size: 15px; min-height: 110px; width: 100%; box-sizing: border-box; text-align: left; background: none; padding: 0;"></p>
+                
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button id="tut-prev-btn" class="start-btn" style="flex:1; background: #555; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">上一步</button>
+                    <button id="tut-next-btn" class="start-btn" style="flex:1; background: #4CAF50; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">下一步</button>
+                </div>
+                <button id="tut-close-btn" class="start-btn" style="width: 100%; background: #d9534f; color: #fff; margin-top: 10px; height: 40px; line-height: 40px; font-size: 14px;">跳过/关闭</button>
+            </div>
+        </div>
+
+        <!-- ================= 势力详情弹窗 ================= -->
+        <div id="faction-modal" class="hidden" style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1001; display: flex; justify-content: center; align-items: center;">
+            <div class="modal-content" style="background: #222; padding: 20px; border-radius: 12px; width: 80%; border: 2px solid #ffcc00;">
+                <h3 id="faction-title" style="color: #ffcc00; margin-top: 0; text-align: center;">势力名称</h3>
+                <p id="faction-desc" class="story-text" style="font-size: 14px; background: none; padding: 0;"></p>
+                <button id="close-modal-btn" class="start-btn" style="width: 100%; margin-top: 15px; height: 36px; line-height: 36px;">关闭</button>
+            </div>
+        </div>
+
+        <!-- ================= 故事背景与地图界面 ================= -->
+        <div id="story-screen" class="overlay" style="z-index: 1000; background-color: #729ebf;">
+            <div class="story-text">
+                <h2 style="text-align:center; color:#ffcc00; margin-top:0; font-size: 20px;">大陆史诗序章</h2>
+                <p>在这片万物皆以“气”为源的世界里，十字星教以难以置信的速度迅速统一了格里尔大陆的北方。在他们建立的十字星骑士团铁蹄下，信仰的利刃与圣光的威压，迫使各方势力不得不低头臣服，这片格里尔大陆俨然成为了十字星教的领地。</p>
+                <p>如今在十字星教团的控制之下分出了三个国家，古老的纳亚帝国在东方固守底蕴，坚毅的贺申共和国在西境严阵以待，狂野的禅摩达克部落联盟在南方黄沙中徘徊。为了消弭永无止境的血腥征伐，一年一度的‘十字星大赛’应运而生。在那位于领地中央的角斗场上，勇者们以‘气’为剑与盾，通过招式的生死较量，角逐无上的荣誉和财富……</p>
+            </div>
+            
+            <div class="map-container">
+                <img src="qizongmap.png" alt="大陆战争地图" class="world-map">
+                <div class="map-hotspot" data-faction="cruxstar" style="top: 5%; left: 35%; width: 30%; height: 40%;"></div>
+                <div class="map-hotspot" data-faction="heshen" style="top: 25%; left: 5%; width: 30%; height: 45%;"></div>
+                <div class="map-hotspot" data-faction="naya" style="top: 20%; left: 65%; width: 30%; height: 50%;"></div>
+                <div class="map-hotspot" data-faction="chanmadak" style="top: 65%; left: 25%; width: 50%; height: 30%;"></div>
+            </div>
+
+            <div class="map-hint">点击地图上的国家查看详细背景</div>
+            
+            <div class="action-btn-group" style="display: flex; gap: 20px; margin-top: 15px;">
+                <button id="show-tutorial-btn" class="start-btn" style="background-color: #4CAF50; color: white;">玩法介绍</button>
+                <button id="skip-story-btn" class="start-btn">进入世界</button>
+            </div>
+        </div>
+        
+        <!-- ================= 主菜单界面 ================= -->
+        <div id="main-menu-screen" class="overlay menu-screen hidden" style="z-index: 999;">
+            <div class="menu-panel">
+                <button class="menu-back-btn" type="button" data-back="story">返回</button>
+                <span class="role-screen-kicker">十字星大赛</span>
+                <h2 class="role-screen-title">进入世界</h2>
+                <button id="pve-menu-btn" class="menu-choice-btn" type="button">人机对决</button>
+                <button id="online-menu-btn" class="menu-choice-btn" type="button">线上真人对决</button>
+                <button id="career-menu-btn" class="menu-choice-btn" type="button">职业介绍</button>
+            </div>
+        </div>
+
+        <!-- ================= 人机模式界面 ================= -->
+        <div id="pve-mode-screen" class="overlay menu-screen hidden" style="z-index: 999;">
+            <div class="menu-panel">
+                <button class="menu-back-btn" type="button" data-back="main">返回</button>
+                <span class="role-screen-kicker">人机对决</span>
+                <h2 class="role-screen-title">选择对战模式</h2>
+                <div class="mode-choice-grid">
+                    <button class="mode-choice-btn active" type="button" data-mode="1v1">1v1</button>
+                    <button class="mode-choice-btn" type="button" data-mode="2v2">2v2</button>
+                </div>
+                <label class="difficulty-label" for="cpu-difficulty">人机难度</label>
+                <select id="cpu-difficulty" class="picker-inner difficulty-select">
+                    <option value="easy">初级训练师</option>
+                    <option value="normal" selected>中级训练师</option>
+                    <option value="hard">高级训练师</option>
+                </select>
+                <button id="mode-confirm-btn" class="start-btn role-start-btn" type="button">选择出战角色</button>
+            </div>
+        </div>
+
+        <!-- ================= 职业介绍界面 ================= -->
+        <div id="career-screen" class="overlay role-screen career-screen hidden" style="z-index: 999;">
+            <header class="role-screen-header">
+                <button class="menu-back-btn" type="button" data-back="main">返回</button>
+                <span class="role-screen-kicker">职业介绍</span>
+                <h2 class="role-screen-title">所有职业信息</h2>
+            </header>
+            <div id="career-card-grid" class="career-card-grid"></div>
+        </div>
+
+        <!-- ================= 角色选择界面 ================= -->
+        <div id="login-screen" class="overlay role-screen hidden" style="z-index: 999;">
+            <header class="role-screen-header">
+                <button class="menu-back-btn" type="button" data-back="pve">返回</button>
+                <span class="role-screen-kicker">十字星大赛</span>
+                <h2 class="role-screen-title">选择出战角色</h2>
+                <input type="text" id="username-input" class="username-input role-name-input" placeholder="输入你的大名..." autocomplete="off">
+            </header>
+
+            <div class="role-target-tabs" role="tablist" aria-label="选择角色归属">
+                <button class="role-target-tab active" type="button" data-target="player" role="tab" aria-selected="true">
+                    你的角色 <span id="player-role-summary">战士</span>
+                </button>
+                <button class="role-target-tab" type="button" data-target="cpu" role="tab" aria-selected="false">
+                    CPU 角色 <span id="cpu-role-summary">战士</span>
+                </button>
+                <button class="role-target-tab duo-only hidden" type="button" data-target="player2" role="tab" aria-selected="false">
+                    队友角色 <span id="player2-role-summary">战士</span>
+                </button>
+                <button class="role-target-tab duo-only hidden" type="button" data-target="cpu2" role="tab" aria-selected="false">
+                    CPU 队友 <span id="cpu2-role-summary">战士</span>
+                </button>
+            </div>
+
+            <label class="difficulty-label" for="role-cpu-difficulty">人机难度</label>
+            <select id="role-cpu-difficulty" class="picker-inner difficulty-select">
+                <option value="easy">初级训练师</option>
+                <option value="normal" selected>中级训练师</option>
+                <option value="hard">高级训练师</option>
+            </select>
+
+            <div id="role-card-grid" class="role-card-grid" aria-label="可选角色"></div>
+
+            <button id="start-game-btn" class="start-btn role-start-btn">进入战场</button>
+
+            <input type="hidden" id="role-a" value="WARRIOR">
+            <input type="hidden" id="role-b" value="WARRIOR">
+            <input type="hidden" id="role-c" value="WARRIOR">
+            <input type="hidden" id="role-d" value="WARRIOR">
+            <input type="hidden" id="game-mode" value="1v1">
+        </div>
+
+        <div id="role-detail-modal" class="overlay role-detail-modal hidden" aria-hidden="true">
+            <article class="role-detail-panel" role="dialog" aria-modal="true" aria-labelledby="role-detail-name">
+                <button id="close-role-detail" class="role-detail-close" type="button" aria-label="关闭角色详情">×</button>
+                <div class="role-detail-visual">
+                    <img id="role-detail-image" src="" alt="">
+                    <div class="role-detail-identity">
+                        <span id="role-detail-faction" class="role-detail-faction"></span>
+                        <h3 id="role-detail-name"></h3>
+                    </div>
+                </div>
+                <div class="role-detail-copy">
+                    <p id="role-detail-description"></p>
+                    <div class="role-skill-box">
+                        <span>角色技能</span>
+                        <strong id="role-detail-skill-name"></strong>
+                        <p id="role-detail-skill"></p>
+                    </div>
+                    <button id="confirm-role-btn" class="start-btn role-confirm-btn" type="button">选择此角色</button>
+                </div>
+            </article>
+        </div>
+
+        <!-- ================= 战斗画面区 ================= -->
+        <div id="battle-scene">
+            <div id="status-bar">
+                <div class="player-status p1">
+                    <div id="name-display-a" class="name-label">玩家 A</div>
+                    <div class="status-line" id="hp-a"></div>
+                    <div class="status-line" id="energy-a"></div>
+                    <div class="status-line buffs">
+                        <span id="barrier-a"></span>
+                        <span id="sword-a"></span>
+                        <span id="paralysis-a"></span>
+                    </div>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="player-status p2">
+                    <div id="name-display-b" class="name-label">CPU</div>
+                    <div class="status-line" id="hp-b" style="justify-content: flex-end;"></div>
+                    <div class="status-line" id="energy-b" style="justify-content: flex-end;"></div>
+                    <div class="status-line buffs" style="justify-content: flex-end;">
+                        <span id="barrier-b"></span>
+                        <span id="sword-b"></span>
+                        <span id="paralysis-b"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stage-area">
+                <div class="character-box">
+                    <div id="lock-status-a" class="speech-bubble hidden"></div>
+                    <div class="avatar p1-avatar">🤺</div>
+                </div>
+                <div class="character-box">
+                    <div id="lock-status-b" class="speech-bubble">思考中...</div>
+                    <div class="avatar p2-avatar">🤖</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= 战报区 ================= -->
+        <div id="log-container">
+            <div class="log-header">— 战地播报 —</div>
+            <div id="log-text" class="log-text">输入名字后开始对决！</div>
+        </div>
+
+        <!-- ================= 操作区 ================= -->
+        <div id="control-panel">
+            <div class="control-header">请选择本回合招式</div>
+            
+            <div id="actions-a" class="action-grid">
+                <button class="action-btn" data-action="CHARGE">集气</button>
+                <button class="action-btn" data-action="SWORD">普通刀</button>
+                <button class="action-btn" data-action="FIRE">火冲</button>
+                <button class="action-btn" data-action="BARRIER">屏障</button>
+                <button class="action-btn" data-action="SHIELD">盾牌</button>
+                <button class="action-btn" data-action="LIGHTNING">狂雷</button>
+                <button class="action-btn btn-holy" data-action="HOLY_SHIELD">圣盾</button>
+                
+                <!-- 专属技能按钮 -->
+                <button class="action-btn btn-steal" id="steal-btn-a" data-action="STEAL" style="display:none;">神偷</button>
+                <button class="action-btn btn-heal" id="heal-btn-a" data-action="MERCY_DEW" style="display:none;">慈露</button>
+            </div>
+            
+            <div id="sub-actions-a" class="sub-actions-grid hidden">
+                <button class="action-btn btn-ice" data-action="ICE_SWORD">冰刀</button>
+                <button class="action-btn btn-elec" data-action="ELEC_SWORD">电刀</button>
+            </div>
+
+            <button id="restart-btn" class="restart-btn hidden">重新开始对局</button>
+            <button id="return-role-btn" class="restart-btn return-role-btn hidden">返回选择人物</button>
+        </div>
+
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
