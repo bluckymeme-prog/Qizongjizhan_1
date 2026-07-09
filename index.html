@@ -10,6 +10,17 @@
     
     <div id="game-container">
 
+        <!-- ================= 初始加载界面 ================= -->
+        <div id="loading-screen" class="overlay loading-screen">
+            <div class="loading-title">
+                <span>气宗极战</span>
+                <small>——小肥鲸工作室出品</small>
+            </div>
+            <div class="loading-progress-wrap">
+                <div id="loading-progress-bar" class="loading-progress-bar"></div>
+            </div>
+        </div>
+
         <!-- ================= 玩法介绍弹窗 ================= -->
         <div id="tutorial-modal" class="overlay hidden tutorial-overlay">
             <div class="tutorial-stage">
@@ -77,6 +88,17 @@
                 <button id="pve-menu-btn" class="menu-choice-btn" type="button">人机对决</button>
                 <button id="online-menu-btn" class="menu-choice-btn" type="button">线上真人对决</button>
                 <button id="career-menu-btn" class="menu-choice-btn" type="button">职业介绍</button>
+            </div>
+        </div>
+
+        <!-- ================= 更新公告 ================= -->
+        <div id="update-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel">
+                <h2>更新公告</h2>
+                <p>1. 我们发现电刀对于冰刀来说过于强势，大大缩减了冰刀的使用场景，于是我们调整了冰刀和电刀的作用，让冰刀专门对付法术攻击，而电刀负责应对刀的攻击。</p>
+                <p>2. 刀不需要消耗气过于强势，因此我们进行了调整：普通刀不需要消耗气，但是觉醒之后的特殊刀会消耗一点气并且觉醒之后强制使用。</p>
+                <div class="update-sign">——小肥鲸工作室</div>
+                <button id="update-close-btn" class="start-btn" type="button">确认</button>
             </div>
         </div>
 

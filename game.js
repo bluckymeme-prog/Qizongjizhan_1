@@ -473,7 +473,7 @@ class Game {
     }
 
     shouldElecParalyze(defenseAction) {
-        return defenseAction === Action.SWORD || defenseAction === Action.BARRIER;
+        return [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(defenseAction);
     }
 
     resolveRound() {
@@ -528,11 +528,6 @@ class Game {
         let paralyzeA = false, paralyzeB = false;
         let isIceElecCrossover = false;
 
-        if ((actA === Action.ICE_SWORD && actB === Action.ELEC_SWORD) || (actB === Action.ICE_SWORD && actA === Action.ELEC_SWORD)) {
-            isIceElecCrossover = true;
-            specialLog += "\u26a1 \u51b0\u7535\u4ea4\u950b\uff01\u53cc\u65b9\u7279\u6b66\u4e92\u76f8\u62b5\u6d88\uff0c\u5747\u672a\u9020\u6210\u4f24\u5bb3\u6216\u9ebb\u75f9\uff01\n";
-        }
-
         if (!isIceElecCrossover) {
             if (isHolyShieldB) {
                 if (actA === Action.LIGHTNING) { effDmgA = 1; specialLog += `⚡🛡️ ${pA.name}的【狂雷】天威击穿了CPU的圣盾/慈露，造成 1 点余波伤害！\n`; } 
@@ -540,8 +535,10 @@ class Game {
             } else {
                 if (actA === Action.ICE_SWORD) {
                     if ([Action.FIRE, Action.LIGHTNING].includes(actB)) { effDmgA = 1; specialLog += `⚔️ ${pA.name}的冰刀破解打断了CPU的[${this.getActionName(actB)}]！\n`; }
+                    else if (actB === Action.CHARGE) effDmgA = 1;
                 } else if (actA === Action.ELEC_SWORD) {
                     if (actB === Action.SWORD) { effDmgA = 1; specialLog += `⚡ ${pA.name}的电刀压制了CPU的普通刀！\n`; }
+                    else if (actB === Action.CHARGE) effDmgA = 1;
                     if (this.shouldElecParalyze(actB)) paralyzeB = true;
                 } else if (actA === Action.SWORD) {
                     if (![Action.SHIELD, Action.BARRIER, Action.FIRE, Action.ELEC_SWORD].includes(actB)) effDmgA = 1;
@@ -560,8 +557,10 @@ class Game {
             } else {
                 if (actB === Action.ICE_SWORD) {
                     if ([Action.FIRE, Action.LIGHTNING].includes(actA)) { effDmgB = 1; specialLog += `⚔️ CPU的冰刀破解打断了${pA.name}的[${this.getActionName(actA)}]！\n`; }
+                    else if (actA === Action.CHARGE) effDmgB = 1;
                 } else if (actB === Action.ELEC_SWORD) {
                     if (actA === Action.SWORD) { effDmgB = 1; specialLog += `⚡ CPU的电刀压制了${pA.name}的普通刀！\n`; }
+                    else if (actA === Action.CHARGE) effDmgB = 1;
                     if (this.shouldElecParalyze(actA)) paralyzeA = true;
                 } else if (actB === Action.SWORD) {
                     if (![Action.SHIELD, Action.BARRIER, Action.FIRE, Action.ELEC_SWORD].includes(actA)) effDmgB = 1;
@@ -622,8 +621,7 @@ class Game {
             pB.barrierCount--; 
             equipLog += `💥 ${pA.name}击碎了CPU的1层[屏障]！\n`; 
             if (actA === Action.ELEC_SWORD) {
-                paralyzeB = true;
-                equipLog += `⚡ 电流沿着破碎屏障蔓延，CPU陷入麻痹！\n`;
+                equipLog += `⚡ 电刀击碎了屏障，但屏障吸收了麻痹电流。\n`;
             }
             if (pB.role === 'METAL_WARRIOR') {
                 pB.swordCount++;
@@ -635,8 +633,7 @@ class Game {
             pA.barrierCount--; 
             equipLog += `💥 CPU击碎了${pA.name}的1层[屏障]！\n`; 
             if (actB === Action.ELEC_SWORD) {
-                paralyzeA = true;
-                equipLog += `⚡ 电流沿着破碎屏障蔓延，${pA.name}陷入麻痹！\n`;
+                equipLog += `⚡ 电刀击碎了屏障，但屏障吸收了麻痹电流。\n`;
             }
             if (pA.role === 'METAL_WARRIOR') {
                 pA.swordCount++;
@@ -755,6 +752,14 @@ Game.prototype.setOverlay = function(id) {
     });
 };
 
+Game.prototype.showUpdateNotice = function() {
+    const modal = document.getElementById('update-modal');
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+};
+
 Game.prototype.renderCareerScreen = function() {
     const grid = document.getElementById('career-card-grid');
     if (!grid) return;
@@ -794,7 +799,10 @@ Game.prototype.initMenuFlow = function() {
     const difficultySelect = document.getElementById('cpu-difficulty');
     const roleDifficultySelect = document.getElementById('role-cpu-difficulty');
 
-    if (skipBtn) skipBtn.onclick = () => this.setOverlay('main-menu-screen');
+    if (skipBtn) skipBtn.onclick = () => {
+        this.setOverlay('main-menu-screen');
+        this.showUpdateNotice();
+    };
     if (pveBtn) pveBtn.onclick = () => this.setOverlay('pve-mode-screen');
     if (onlineBtn) onlineBtn.onclick = () => alert('暂未开放，敬请期待');
     if (careerBtn) careerBtn.onclick = () => {
@@ -1259,8 +1267,8 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
         const allEnemySwordsBroken = !anyEnemyHasSword;
 
         const fireKillTarget = aliveOpponents.find(player => player.hp <= 2 && canFireHit(player));
-        const iceKillTarget = aliveOpponents.find(player => player.hp <= 1 && [Action.FIRE, Action.LIGHTNING].includes(player.currentAction));
-        const elecKillTarget = aliveOpponents.find(player => player.hp <= 1 && player.currentAction === Action.SWORD);
+        const iceKillTarget = aliveOpponents.find(player => player.hp <= 1 && [Action.FIRE, Action.LIGHTNING, Action.CHARGE].includes(player.currentAction));
+        const elecKillTarget = aliveOpponents.find(player => player.hp <= 1 && [Action.SWORD, Action.CHARGE].includes(player.currentAction));
         const normalSwordKillTarget = aliveOpponents.find(player => player.hp <= 1 && canNormalSwordHit(player));
         const lightningKillTargets = aliveOpponents.filter(player => player.hp <= (isHolyAction(player.currentAction) ? 1 : 3) && canLightningHitHard(player));
         const hasLethal = lightningKillTargets.length > 0 || !!fireKillTarget || !!iceKillTarget || !!elecKillTarget || !!normalSwordKillTarget;
@@ -1333,11 +1341,11 @@ Game.prototype.cpuDecisionFor = function(cpu, opponents, allies) {
                 setWeight(Action.CHARGE, 50);
             } else {
                 const spellTarget = fireActors[0] || lightningActors[0] || pressureTarget;
-                const swordTarget = swordActors.find(player => player.currentAction === Action.SWORD)
+                const swordTarget = swordActors.find(player => [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(player.currentAction))
                     || aliveOpponents.find(player => player.currentAction === Action.BARRIER)
                     || pressureTarget;
                 addWeight(Action.ICE_SWORD, (fireActors.length || lightningActors.length) ? 40 : 24, spellTarget);
-                addWeight(Action.ELEC_SWORD, swordTarget?.currentAction === Action.SWORD || swordTarget?.currentAction === Action.BARRIER ? 38 : 18, swordTarget);
+                addWeight(Action.ELEC_SWORD, [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(swordTarget?.currentAction) ? 38 : 18, swordTarget);
                 addWeight(Action.FIRE, 8, pressureTarget);
             }
         }
@@ -1401,7 +1409,9 @@ Game.prototype.pickCpuTarget = function(cpu, action, opponents, allies) {
             || null;
     }
     if (action === Action.ELEC_SWORD) {
-        return opponents.find(player => [Action.SWORD, Action.BARRIER].includes(player.currentAction))
+        return opponents.find(player => [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(player.currentAction))
+            || opponents.find(player => player.currentAction === Action.CHARGE)
+            || opponents.find(player => player.currentAction === Action.BARRIER)
             || opponents.slice().sort((a, b) => a.hp - b.hp || b.energy - a.energy)[0]
             || null;
     }
@@ -1597,6 +1607,8 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
         if ([Action.FIRE, Action.LIGHTNING].includes(defense)) {
             damage = 1;
             log += `❄ ${this.playerLabel(actor)} 的冰刀破解了 ${this.playerLabel(target)} 的【${this.getActionName(defense)}】。\n`;
+        } else if (defense === Action.CHARGE) {
+            damage = 1;
         } else if (defense === Action.BARRIER) {
             target.barrierCount -= 1;
             if (target.role === 'METAL_WARRIOR') {
@@ -1611,14 +1623,18 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
             damage = 1;
             target.nextTurnParalyze = true;
             log += `⚡ ${this.playerLabel(actor)} 的电刀压制了 ${this.playerLabel(target)} 的普通刀，并造成麻痹。\n`;
+        } else if (defense === Action.CHARGE) {
+            damage = 1;
+        } else if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(defense)) {
+            target.nextTurnParalyze = true;
+            log += `⚡ ${this.playerLabel(actor)} 的电刀干扰了 ${this.playerLabel(target)} 的【${this.getActionName(defense)}】，造成麻痹。\n`;
         } else if (defense === Action.BARRIER) {
             target.barrierCount -= 1;
-            target.nextTurnParalyze = true;
             if (target.role === 'METAL_WARRIOR') {
                 target.swordCount += 1;
                 if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
             }
-            log += `💥⚡ ${this.playerLabel(actor)} 的电刀击碎了 ${this.playerLabel(target)} 的 1 层屏障，并造成麻痹。\n`;
+            log += `💥⚡ ${this.playerLabel(actor)} 的电刀击碎了 ${this.playerLabel(target)} 的 1 层屏障，麻痹电流被屏障吸收。\n`;
             return log;
         }
     }
@@ -1666,6 +1682,33 @@ Game.prototype.finishTeamRound = function(log) {
 
 // 绑定故事界面的交互事件及启动游戏
 document.addEventListener('DOMContentLoaded', () => {
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingProgressBar = document.getElementById('loading-progress-bar');
+    if (loadingScreen && loadingProgressBar) {
+        let progress = 0;
+        const loadingTimer = setInterval(() => {
+            progress = Math.min(100, progress + Math.floor(Math.random() * 12) + 8);
+            loadingProgressBar.style.width = `${progress}%`;
+            if (progress >= 100) {
+                clearInterval(loadingTimer);
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                    loadingScreen.style.display = 'none';
+                }, 350);
+            }
+        }, 120);
+    }
+
+    const updateModal = document.getElementById('update-modal');
+    const updateCloseBtn = document.getElementById('update-close-btn');
+    if (updateCloseBtn && updateModal) {
+        updateCloseBtn.onclick = () => {
+            updateModal.classList.add('hidden');
+            updateModal.style.display = 'none';
+            updateModal.setAttribute('aria-hidden', 'true');
+        };
+    }
+
     
     // ================= 故事背景事件 =================
     const storyScreen = document.getElementById('story-screen');
@@ -1712,7 +1755,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { text: "火冲消耗两点气，造成两点伤害；狂雷消耗四点气，造成三点伤害。火冲更适合抓破绽，狂雷适合逼迫对手防守。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-slide-r"><strong>🔥</strong>2气 / 2伤</div><div class="tut-skill-card anim-strike"><strong>⚡</strong>4气 / 3伤</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
         { text: "屏障能抵挡火冲，集气能避开狂雷。盾牌主要用来防刀，但不会击碎冰刀和电刀。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-clash-l"><strong>🔥</strong>火冲</div><div class="tut-skill-card anim-block"><strong>🛡</strong>屏障</div><div class="tut-skill-card anim-strike"><strong>⚡</strong>狂雷</div><div class="tut-skill-card"><strong>●</strong>集气</div></div><div class="tut-demo-character"><div class="tut-sprite shield"></div></div></div>` },
         { text: "普通刀不耗气。使用普通刀后会进入觉醒状态；觉醒状态下不能再普通刀，下一次出刀必须选择冰刀或电刀。中途可以先用非刀技能。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card"><strong>🗡</strong>普通刀</div><span style="color:#aaa;">➜</span><div class="tut-skill-card"><strong>❄</strong>冰刀</div><div class="tut-skill-card"><strong>⚡</strong>电刀</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
-        { text: "冰刀和电刀都消耗一点气。冰刀克制火冲和狂雷，造成一点伤害；电刀克制普通刀，造成一点伤害并麻痹，击碎屏障也会麻痹，但不会麻痹集气、冰刀、电刀、火冲和狂雷。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-block"><strong>❄</strong>破火冲/狂雷</div><div class="tut-skill-card anim-block"><strong>⚡</strong>抓普通刀/屏障</div><div class="tut-skill-card"><strong>1</strong>消耗气</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
+        { text: "冰刀和电刀都消耗一点气。冰刀克制火冲和狂雷，造成一点伤害；冰刀和电刀命中集气都会造成一点伤害。电刀会麻痹普通刀、冰刀和电刀，但不再麻痹屏障。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card anim-block"><strong>❄</strong>破火冲/狂雷</div><div class="tut-skill-card anim-block"><strong>⚡</strong>麻痹刀类</div><div class="tut-skill-card"><strong>1</strong>消耗气</div></div><div class="tut-demo-character"><div class="tut-sprite attack"></div></div></div>` },
         { text: "圣盾消耗一点气，能挡刀和火冲；牧师的慈露、盗贼的神偷也会视作自身使用圣盾。记住这些克制关系，你就能开始读招了。", anim: `<div class="tut-demo"><div class="tut-demo-icons"><div class="tut-skill-card"><strong>✨</strong>圣盾</div><div class="tut-skill-card"><strong>💧</strong>慈露</div><div class="tut-skill-card"><strong>🕵</strong>神偷</div></div><div class="tut-demo-character"><div class="tut-sprite shield"></div></div></div>` }
     ];
 
