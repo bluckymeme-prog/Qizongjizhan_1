@@ -150,6 +150,39 @@ body {
 #update-close-btn {
     width: 100%;
 }
+#sudden-mode-close-btn {
+    width: 100%;
+}
+.action-btn.awakened-locked {
+    background: #292929 !important;
+    color: #8a8a8a !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+.battle-toast {
+    position: absolute;
+    left: 50%;
+    bottom: 24%;
+    transform: translateX(-50%);
+    z-index: 1500;
+    min-width: 180px;
+    max-width: min(80%, 360px);
+    padding: 12px 18px;
+    border: 2px solid #1b1b1b;
+    border-radius: 8px;
+    background: #fffdf4;
+    color: #111;
+    font-weight: 900;
+    text-align: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.36);
+    animation: toast-fade 1.45s ease forwards;
+}
+@keyframes toast-fade {
+    0% { opacity: 0; transform: translate(-50%, 10px); }
+    16%, 78% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -8px); }
+}
 
 /* ================= 主菜单 / 模式选择 ================= */
 .menu-screen {
@@ -445,7 +478,7 @@ body {
     z-index: 1002;
     background:
         linear-gradient(180deg, rgba(10, 12, 24, 0.92), rgba(8, 6, 14, 0.96)),
-        url("assets/images/arane 1.jpg") center bottom / cover no-repeat;
+        url("assets/images/arane 1.webp") center bottom / cover no-repeat;
     align-items: stretch;
     justify-content: center;
 }
@@ -624,7 +657,7 @@ body {
     flex: 0 0 128px;
     background-repeat: no-repeat;
     background-size: 640px 384px;
-    background-image: url("assets/images/priest sprite transparent.png");
+    background-image: url("assets/images/priest sprite transparent.webp");
     filter: drop-shadow(0 10px 10px rgba(0,0,0,0.35));
 }
 .tut-demo-character .tut-sprite {
@@ -632,7 +665,7 @@ body {
     transform-origin: bottom center;
 }
 .tut-sprite.charge {
-    background-image: url("assets/images/priest sprite 2 transparent.png");
+    background-image: url("assets/images/priest sprite 2 transparent.webp");
     animation: priest-charge-frames 500ms linear infinite;
 }
 .tut-sprite.attack { animation: priest-attack-frames 500ms linear infinite; }
@@ -720,7 +753,7 @@ body {
 /* ================= 战斗画面区 ================= */
 #battle-scene {
     flex: 4.5;
-    background-image: url('assets/images/arane 1.jpg');
+    background-image: url('assets/images/arane 1.webp');
     background-size: cover;             /* 让图片按比例铺满整个战斗区 */
     background-position: center bottom; /* 让图片对齐底部，这样地板的透视感最好 */
     background-repeat: no-repeat;       /* 防止图片重复拼接 */
@@ -730,9 +763,100 @@ body {
     flex-direction: column;
     border-bottom: 2px solid #ffcc00;
 }
+.battle-effect-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    overflow: hidden;
+}
+.battle-effect {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.7));
+    pointer-events: none;
+    --flip-x: 1;
+}
+.battle-effect.instant {
+    animation: effect-pop 720ms ease-out forwards;
+}
+.battle-effect.fly {
+    animation: effect-fly 760ms ease-in-out forwards;
+}
+.battle-effect.clash {
+    width: 132px;
+    height: 132px;
+    animation: effect-clash 820ms ease-out forwards;
+}
+@keyframes effect-pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55) scaleX(var(--flip-x)) rotate(-8deg); }
+    22% { opacity: 1; transform: translate(-50%, -50%) scale(1.12) scaleX(var(--flip-x)) rotate(4deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35) scaleX(var(--flip-x)) rotate(12deg); }
+}
+@keyframes effect-fly {
+    0% {
+        opacity: 0;
+        left: var(--from-x);
+        top: var(--from-y);
+        transform: translate(-50%, -50%) scale(0.7) scaleX(var(--flip-x));
+    }
+    18% { opacity: 1; }
+    82% { opacity: 1; }
+    100% {
+        opacity: 0;
+        left: var(--to-x);
+        top: var(--to-y);
+        transform: translate(-50%, -50%) scale(1.12) scaleX(var(--flip-x));
+    }
+}
+@keyframes effect-clash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); filter: brightness(1.1) drop-shadow(0 0 8px #fff); }
+    25% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); filter: brightness(1.8) drop-shadow(0 0 18px #fff); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); filter: brightness(1.2) drop-shadow(0 0 4px #fff); }
+}
 #status-bar {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 12px; background: rgba(0, 0, 0, 0.4); z-index: 10;
+}
+#status-bar.ffa-status-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 6px 8px;
+    align-items: start;
+}
+#status-bar.ffa-status-bar .vs-badge {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-top: 0;
+    writing-mode: vertical-rl;
+    letter-spacing: 0;
+    font-size: 16px;
+}
+#status-bar.ffa-status-bar .status-team {
+    width: 100%;
+    gap: 0;
+}
+#status-bar.ffa-status-bar .status-team:nth-child(1) { grid-column: 1; grid-row: 1; }
+#status-bar.ffa-status-bar .status-team:nth-child(2) { grid-column: 3; grid-row: 1; }
+#status-bar.ffa-status-bar .status-team:nth-child(4) { grid-column: 1; grid-row: 2; }
+#status-bar.ffa-status-bar .status-team:nth-child(5) { grid-column: 3; grid-row: 2; }
+#status-bar.ffa-status-bar .player-status {
+    padding: 5px;
+}
+#status-bar.ffa-status-bar .name-label {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+#status-bar.ffa-status-bar .status-line {
+    min-height: 18px;
+    margin-bottom: 2px;
 }
 .player-status { width: 42%; }
 .p2 { text-align: right; }
@@ -818,22 +942,22 @@ body {
     font-size: 0;
 }
 .priest-sprite {
-    background-image: url("assets/images/priest sprite transparent.png");
+    background-image: url("assets/images/priest sprite transparent.webp");
 }
 .warrior-sprite {
-    background-image: url("assets/images/warrior sprite 1.png");
+    background-image: url("assets/images/warrior sprite 1.webp");
 }
 .burglar-sprite {
-    background-image: url("assets/images/burglar sprite 1.png");
+    background-image: url("assets/images/burglar sprite 1.webp");
 }
 .metal-sprite {
-    background-image: url("assets/images/metal sprite 1.png");
+    background-image: url("assets/images/metal sprite 1.webp");
 }
 .barbarian-sprite {
-    background-image: url("assets/images/barbarian sprite 1.png");
+    background-image: url("assets/images/barbarian sprite 1.webp");
 }
 .knight-sprite {
-    background-image: url("assets/images/knight_sprite_1.png");
+    background-image: url("assets/images/knight_sprite_1.webp");
     position: relative;
     top: -10px;   
 }
@@ -858,7 +982,7 @@ body {
 .priest-charge,
 .priest-victory,
 .priest-defeat {
-    background-image: url("assets/images/priest sprite 2 transparent.png");
+    background-image: url("assets/images/priest sprite 2 transparent.webp");
 }
 .priest-charge {
     animation: priest-charge-frames 500ms linear 1 forwards;
@@ -881,7 +1005,7 @@ body {
 .warrior-charge,
 .warrior-victory,
 .warrior-defeat {
-    background-image: url("assets/images/warrior sprite 2.png");
+    background-image: url("assets/images/warrior sprite 2.webp");
 }
 .warrior-charge {
     animation: warrior-charge-frames 500ms linear 1 forwards;
@@ -904,7 +1028,7 @@ body {
 .burglar-charge,
 .burglar-victory,
 .burglar-defeat {
-    background-image: url("assets/images/burglar sprite 2.png");
+    background-image: url("assets/images/burglar sprite 2.webp");
 }
 .burglar-charge {
     animation: burglar-charge-frames 500ms linear 1 forwards;
@@ -927,7 +1051,7 @@ body {
 .metal-charge,
 .metal-victory,
 .metal-defeat {
-    background-image: url("assets/images/metal sprite 2.png");
+    background-image: url("assets/images/metal sprite 2.webp");
 }
 .metal-charge {
     animation: metal-charge-frames 500ms linear 1 forwards;
@@ -950,7 +1074,7 @@ body {
 .barbarian-charge,
 .barbarian-victory,
 .barbarian-defeat {
-    background-image: url("assets/images/barbarian sprite 2.png");
+    background-image: url("assets/images/barbarian sprite 2.webp");
 }
 .barbarian-charge {
     animation: barbarian-charge-frames 500ms linear 1 forwards;
@@ -977,7 +1101,7 @@ body {
 .knight-charge,
 .knight-victory,
 .knight-defeat {
-    background-image: url("assets/images/knight_sprite_2.png");
+    background-image: url("assets/images/knight_sprite_2.webp");
 }
 .knight-charge {
     animation: knight-charge-frames 500ms linear 1 forwards;

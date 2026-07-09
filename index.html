@@ -32,7 +32,7 @@
                     <div id="tutorial-animation-box" class="tut-anim-box"></div>
                 </div>
 
-                <img class="tutorial-priest-portrait" src="assets/images/priest com.png" alt="牧师">
+                <img class="tutorial-priest-portrait" src="assets/images/priest com.webp" alt="牧师">
 
                 <div class="tutorial-dialogue">
                     <div class="tutorial-speaker">牧师</div>
@@ -103,6 +103,17 @@
         </div>
 
         <!-- ================= 人机模式界面 ================= -->
+        <div id="sudden-mode-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel">
+                <h2>突然死亡模式</h2>
+                <p>1. 双方开局均为 1 点生命、3 点气。</p>
+                <p>2. 普通刀也会消耗 1 点气。</p>
+                <p>3. 冰刀和电刀专门用于对抗火冲与狂雷：冰刀造成 1 点伤害，电刀造成麻痹。</p>
+                <p>4. 其余技能规则保持不变。</p>
+                <button id="sudden-mode-close-btn" class="start-btn" type="button">确认</button>
+            </div>
+        </div>
+
         <div id="pve-mode-screen" class="overlay menu-screen hidden" style="z-index: 999;">
             <div class="menu-panel">
                 <button class="menu-back-btn" type="button" data-back="main">返回</button>
@@ -110,7 +121,9 @@
                 <h2 class="role-screen-title">选择对战模式</h2>
                 <div class="mode-choice-grid">
                     <button class="mode-choice-btn active" type="button" data-mode="1v1">1v1</button>
+                    <button class="mode-choice-btn" type="button" data-mode="sudden">突然死亡模式</button>
                     <button class="mode-choice-btn" type="button" data-mode="2v2">2v2</button>
+                    <button class="mode-choice-btn" type="button" data-mode="ffa">四人乱斗</button>
                 </div>
                 <label class="difficulty-label" for="cpu-difficulty">人机难度</label>
                 <select id="cpu-difficulty" class="picker-inner difficulty-select">
