@@ -3635,38 +3635,22 @@ Game.prototype.finishTeamRound = function(log) {
 document.addEventListener('DOMContentLoaded', () => {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingProgressBar = document.getElementById('loading-progress-bar');
-    const collectGameAssetUrls = () => {
+    const collectInitialAssetUrls = () => {
         const urls = new Set();
         const addUrl = rawUrl => {
             if (!rawUrl || rawUrl.startsWith('data:') || rawUrl.startsWith('blob:')) return;
             urls.add(new URL(rawUrl, window.location.href).href);
         };
 
-        document.querySelectorAll('img[src]').forEach(img => addUrl(img.getAttribute('src')));
-        Object.values(roleProfiles).forEach(profile => addUrl(profile.image));
+        // Only block on images visible before the player reaches the menu.
+        // Loading every CSS sprite sheet here made the GitHub Pages first visit
+        // download nearly 30 MB before the game could open.
+        document.querySelectorAll('#loading-screen img[src], #story-screen img[src]')
+            .forEach(img => addUrl(img.getAttribute('src')));
         [
             'qizongmap.webp',
-            'icon.webp',
-            'assets/images/map/ancient-colosseum-arena-background.webp',
-            'assets/images/map/ancient-colosseum-arena-background.webp',
-            'assets/images/map/ancient-colosseum-marble-sci-fi-background.webp',
-            'assets/images/map/chinese-arena-battle-background-lineart.webp',
-            'assets/images/map/northern-snow-fortress-arena-background.webp',
-            'assets/images/map/western-regions-oasis-arena-background.webp'
+            'icon.webp'
         ].forEach(addUrl);
-
-        [...document.styleSheets].forEach(sheet => {
-            let rules = [];
-            try {
-                rules = [...(sheet.cssRules || [])];
-            } catch (error) {
-                return;
-            }
-            rules.forEach(rule => {
-                const matches = (rule.cssText || '').matchAll(/url\(["']?([^"')]+)["']?\)/g);
-                for (const match of matches) addUrl(match[1]);
-            });
-        });
 
         return [...urls];
     };
@@ -3680,7 +3664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadingReady = (async () => {
         if (!loadingScreen || !loadingProgressBar) return [];
-        const urls = collectGameAssetUrls();
+        const urls = collectInitialAssetUrls();
         const total = urls.length;
         let completed = 0;
         const updateProgress = () => {
