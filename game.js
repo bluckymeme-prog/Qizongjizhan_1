@@ -204,7 +204,7 @@ class Game {
             <button class="role-card faction-${profile.factionKey}" type="button" data-role="${role}" aria-label="查看${profile.name}详情">
                 <span class="role-card-check">✓</span>
                 <span class="role-card-art">
-                    <img class="role-card-image" src="${profile.image}" alt="${profile.name}">
+                    <img class="role-card-image" src="${profile.image}" alt="${profile.name}" loading="lazy" decoding="async">
                     <span class="role-card-image-label">
                         <strong>${profile.name}</strong>
                         <small>${profile.faction}</small>
@@ -1016,7 +1016,7 @@ Game.prototype.renderCareerScreen = function() {
     if (!grid) return;
     grid.innerHTML = Object.entries(roleProfiles).map(([role, profile]) => `
         <button class="career-card faction-${profile.factionKey}" type="button" data-role="${role}" aria-label="${profile.name}">
-            <img src="${profile.image}" alt="${profile.name}">
+            <img src="${profile.image}" alt="${profile.name}" loading="lazy" decoding="async">
             <div>
                 <h3>${profile.name}</h3>
                 <small>${profile.faction}</small>
@@ -1253,7 +1253,7 @@ Game.prototype.initRoleSelection = function(roleAInput, roleBInput, roleCInput, 
         <button class="role-card faction-${profile.factionKey}" type="button" data-role="${role}" aria-label="查看${profile.name}详情">
             <span class="role-card-check">✓</span>
             <span class="role-card-art">
-                <img class="role-card-image" src="${profile.image}" alt="${profile.name}">
+                <img class="role-card-image" src="${profile.image}" alt="${profile.name}" loading="lazy" decoding="async">
                 <span class="role-card-image-label">
                     <strong>${profile.name}</strong>
                     <small>${profile.faction}</small>
@@ -3657,13 +3657,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const preloadImage = url => new Promise(resolve => {
         const image = new Image();
-        image.onload = () => resolve({ url, ok: true });
-        image.onerror = () => resolve({ url, ok: false });
+        let settled = false;
+        const finish = ok => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            resolve({ url, ok });
+        };
+        const timeout = setTimeout(() => finish(false), 8000);
+        image.fetchPriority = 'high';
+        image.decoding = 'async';
+        image.onload = () => finish(true);
+        image.onerror = () => finish(false);
         image.src = url;
     });
 
     const loadingReady = (async () => {
-        if (!loadingScreen || !loadingProgressBar) return [];
+        if (!loadingScreen || !loadingProgressBar) {
+            document.documentElement.classList.remove('app-loading');
+            return [];
+        }
         const urls = collectInitialAssetUrls();
         const total = urls.length;
         let completed = 0;
@@ -3680,10 +3693,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return result;
         })));
         loadingProgressBar.style.width = '100%';
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            loadingScreen.style.display = 'none';
-        }, 250);
+        await new Promise(resolve => setTimeout(resolve, 120));
+        loadingScreen.classList.add('hidden');
+        loadingScreen.style.display = 'none';
+        // Remove the critical first-paint guard only after the loading layer has
+        // already been hidden, so the menu can never flash in front of it.
+        document.documentElement.classList.remove('app-loading');
         return results;
     })();
 

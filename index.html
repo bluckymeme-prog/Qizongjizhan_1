@@ -1,10 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="app-loading">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>气宗极战网页端_内测版</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="preload" href="icon.webp" as="image" type="image/webp" fetchpriority="high">
+    <link rel="preload" href="qizongmap.webp" as="image" type="image/webp" fetchpriority="high">
+    <style>
+        html.app-loading body { margin: 0; overflow: hidden; background: #000; }
+        html.app-loading #game-container > :not(#loading-screen) { visibility: hidden !important; }
+        html.app-loading #loading-screen {
+            position: fixed; inset: 0; z-index: 99999; display: flex !important;
+            flex-direction: column; align-items: center; justify-content: space-between;
+            box-sizing: border-box; padding: 120px 26px 42px;
+            background: #050505 url("icon.webp") center / cover no-repeat;
+            color: #fff;
+        }
+    </style>
+    <link rel="stylesheet" href="style.css?v=3.02.1">
 </head>
 <body>
     
@@ -33,7 +46,7 @@
                     <div id="tutorial-animation-box" class="tut-anim-box"></div>
                 </div>
 
-                <img class="tutorial-priest-portrait" src="assets/images/priest com.webp" alt="牧师">
+                <img class="tutorial-priest-portrait" src="assets/images/priest com.webp" alt="牧师" loading="lazy" decoding="async">
 
                 <div class="tutorial-dialogue">
                     <div class="tutorial-speaker">牧师</div>
@@ -65,7 +78,7 @@
             </div>
             
             <div class="map-container">
-                <img src="qizongmap.webp" alt="大陆战争地图" class="world-map">
+                <img src="qizongmap.webp" alt="大陆战争地图" class="world-map" decoding="async" fetchpriority="high">
                 <div class="map-hotspot" data-faction="cruxstar" style="top: 5%; left: 35%; width: 30%; height: 40%;"></div>
                 <div class="map-hotspot" data-faction="heshen" style="top: 25%; left: 5%; width: 30%; height: 45%;"></div>
                 <div class="map-hotspot" data-faction="naya" style="top: 20%; left: 65%; width: 30%; height: 50%;"></div>
@@ -327,6 +340,6 @@
 
     </div>
 
-    <script src="game.js"></script>
+    <script src="game.js?v=3.02.1"></script>
 </body>
 </html>
