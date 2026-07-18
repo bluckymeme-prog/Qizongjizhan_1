@@ -1326,9 +1326,13 @@ body {
     animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .barbarian-attack {
-    background-image: url("assets/images/barbarian/barbarian_attack_spritesheet_clean.webp");
-    background-size: 840px 560px;
-    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
+    width: 150px;
+    height: 150px;
+    flex-basis: 150px;
+    background-image: url("assets/images/barbarian/barbarian_attack_spritesheet_baseline.webp?v=1");
+    background-size: 900px 600px;
+    animation: barbarian-attack-frames-compact 1200ms step-end 1 forwards;
+    transform-origin: center bottom;
 }
 .barbarian-shield {
     background-image: url("assets/images/barbarian/barbarian_defense_spritesheet_clean.webp");
@@ -1629,6 +1633,32 @@ body {
     87.5%, 91.666% { background-position: -420px -420px; }
     91.667%, 95.832% { background-position: -560px -420px; }
     95.833%, 100% { background-position: -700px -420px; }
+}
+@keyframes barbarian-attack-frames-compact {
+    0%, 4.166% { background-position: 0 0; }
+    4.167%, 8.332% { background-position: -150px 0; }
+    8.333%, 12.499% { background-position: -300px 0; }
+    12.5%, 16.666% { background-position: -450px 0; }
+    16.667%, 20.832% { background-position: -600px 0; }
+    20.833%, 24.999% { background-position: -750px 0; }
+    25%, 29.166% { background-position: 0 -150px; }
+    29.167%, 33.332% { background-position: -150px -150px; }
+    33.333%, 37.499% { background-position: -300px -150px; }
+    37.5%, 41.666% { background-position: -450px -150px; }
+    41.667%, 45.832% { background-position: -600px -150px; }
+    45.833%, 49.999% { background-position: -750px -150px; }
+    50%, 54.166% { background-position: 0 -300px; }
+    54.167%, 58.332% { background-position: -150px -300px; }
+    58.333%, 62.499% { background-position: -300px -300px; }
+    62.5%, 66.666% { background-position: -450px -300px; }
+    66.667%, 70.832% { background-position: -600px -300px; }
+    70.833%, 74.999% { background-position: -750px -300px; }
+    75%, 79.166% { background-position: 0 -450px; }
+    79.167%, 83.332% { background-position: -150px -450px; }
+    83.333%, 87.499% { background-position: -300px -450px; }
+    87.5%, 91.666% { background-position: -450px -450px; }
+    91.667%, 95.832% { background-position: -600px -450px; }
+    95.833%, 100% { background-position: -750px -450px; }
 }
 @keyframes barbarian-idle-frames {
     0%, 3.999% { background-position: 0 0; }
