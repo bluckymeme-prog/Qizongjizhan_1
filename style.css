@@ -11,6 +11,11 @@ body {
     color: #fff;
 }
 
+/* Keep content images inside their containers on every narrow viewport. */
+img {
+    max-inline-size: 100%;
+}
+
 /* 模拟手机容器 */
 #game-container {
     width: 100%;
@@ -352,6 +357,34 @@ body {
     text-align: justify;
 }
 
+@media (max-width: 600px) {
+    .career-detail-modal {
+        padding: 10px;
+        justify-content: center;
+    }
+    .career-detail-panel {
+        width: 100%;
+        max-height: calc(100dvh - 20px);
+    }
+    .career-sprite-stage {
+        height: clamp(230px, 38dvh, 320px);
+        padding: 8px 10px;
+    }
+    .career-detail-sprite {
+        width: min(82vw, 340px);
+        --career-sprite-global-offset-x: 0px;
+        --career-sprite-global-offset-y: -26px;
+        /* Center every role on narrow screens instead of inheriting desktop offsets. */
+        transform: translate(0, var(--career-sprite-global-offset-y));
+    }
+    .career-detail-copy {
+        padding: 14px 16px 18px;
+    }
+    .career-detail-copy h3 {
+        font-size: 24px;
+    }
+}
+
 /* ================= 角色选择 ================= */
 .role-screen {
     justify-content: flex-start;
@@ -501,6 +534,39 @@ body {
     .role-card-image-label small { font-size: 9px; }
 }
 
+@media (max-width: 420px) {
+    .loading-screen {
+        padding: clamp(68px, 14dvh, 104px) 18px 30px;
+    }
+    .story-text {
+        width: calc(100% - 28px);
+        box-sizing: border-box;
+    }
+    .map-container {
+        width: calc(100% - 24px);
+        max-width: 420px;
+        box-sizing: border-box;
+    }
+    .career-card {
+        grid-template-columns: 72px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px;
+    }
+    .career-card img {
+        width: 72px;
+        height: 92px;
+    }
+    .role-detail-modal {
+        padding: 10px;
+    }
+    .role-detail-visual {
+        min-height: 0;
+    }
+    .role-detail-visual img {
+        height: clamp(190px, 62vw, 245px);
+    }
+}
+
 /* ================= 故事与地图界面 ================= */
 .story-text {
     width: 85%;
@@ -616,7 +682,7 @@ body {
 .tutorial-priest-portrait {
     position: absolute;
     left: clamp(-86px, -8vw, -42px);
-    bottom: -40px;
+    bottom: -105px;
     width: min(38vw, 330px);
     max-height: 70%;
     object-fit: contain;
@@ -799,7 +865,7 @@ body {
     .tutorial-priest-portrait {
         width: 210px;
         left: -64px;
-        bottom: 72px;
+        bottom: 12px;
         max-height: 52%;
         transform: none; 
     }
@@ -826,6 +892,7 @@ body {
 /* ================= 战斗画面区 ================= */
 #battle-scene {
     flex: 4.5;
+    min-height: 0;
     background-image: var(--battle-background-image, url('assets/images/map/ancient-colosseum-arena-background.webp'));
     background-size: cover;             /* 让图片按比例铺满整个战斗区 */
     background-position: center bottom; /* 让图片对齐底部，这样地板的透视感最好 */
@@ -943,6 +1010,34 @@ body {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 12px; background: rgba(0, 0, 0, 0.4); z-index: 10;
 }
+#battle-scene.multiplayer-battle {
+    flex: 3.1;
+}
+#battle-scene.multiplayer-battle #status-bar {
+    padding: 6px 8px;
+}
+#battle-scene.multiplayer-battle .status-team {
+    gap: 3px;
+}
+#battle-scene.multiplayer-battle .status-team .player-status {
+    padding: 3px 4px;
+}
+#battle-scene.multiplayer-battle .name-label {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+#battle-scene.multiplayer-battle .status-line {
+    min-height: 17px;
+    margin-bottom: 1px;
+}
+#battle-scene.multiplayer-battle .icon {
+    font-size: 13px;
+}
+#battle-scene.multiplayer-battle .empty-text,
+#battle-scene.multiplayer-battle .unlocked-text,
+#battle-scene.multiplayer-battle .para-text {
+    font-size: 10px;
+}
 #status-bar.ffa-status-bar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -1048,6 +1143,7 @@ body {
 .stage-area {
     flex: 1; display: flex; justify-content: space-between; align-items: flex-end;
     padding: 0 30px 20px 30px;
+    min-height: 0;
 }
 .status-team {
     width: 44%;
@@ -1067,6 +1163,9 @@ body {
     align-items: flex-end;
     padding: 0 18px 18px;
 }
+#battle-scene.multiplayer-battle .stage-area.team-stage {
+    padding: 0 12px 8px;
+}
 .team-formation {
     display: flex;
     flex-direction: column;
@@ -1074,6 +1173,24 @@ body {
     align-items: center;
 }
 .team-formation.cpu-side { flex-direction: column-reverse; }
+#battle-scene.multiplayer-battle .team-formation {
+    gap: 0;
+}
+#battle-scene.multiplayer-battle .character-box {
+    height: 106px;
+}
+#battle-scene.multiplayer-battle .avatar {
+    scale: 0.76;
+    transform-origin: center bottom;
+}
+#battle-scene.multiplayer-battle .p2-avatar.priest-sprite,
+#battle-scene.multiplayer-battle .p2-avatar.warrior-sprite,
+#battle-scene.multiplayer-battle .p2-avatar.burglar-sprite,
+#battle-scene.multiplayer-battle .p2-avatar.metal-sprite,
+#battle-scene.multiplayer-battle .p2-avatar.barbarian-sprite,
+#battle-scene.multiplayer-battle .p2-avatar.knight-sprite {
+    scale: -0.76 0.76;
+}
 .team-formation .character-box:nth-child(2) {
     transform: translateX(20px);
 }
@@ -1748,6 +1865,7 @@ body {
 #log-container {
     flex: 1.5; background: #111; padding: 10px 15px; box-sizing: border-box;
     border-bottom: 2px solid #333; overflow-y: auto; display: flex; flex-direction: column;
+    min-height: 0;
 }
 .log-header { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 5px; }
 .log-text { font-size: 14px; line-height: 1.6; color: #ddd; white-space: pre-line; flex: 1; }
@@ -1756,6 +1874,7 @@ body {
 #control-panel {
     flex: 4; background: #222; padding: 15px 12px 25px 12px;
     display: flex; flex-direction: column; justify-content: center;
+    min-height: 0;
 }
 .control-header {
     position: relative;
