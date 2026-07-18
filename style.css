@@ -55,6 +55,135 @@ body {
     background: #ffcc00; color: #000; border-radius: 22px; border: none; cursor: pointer;
 }
 
+/* ================= 初始加载界面 / 更新公告 ================= */
+.loading-screen {
+    z-index: 3000;
+    justify-content: space-between;
+    padding: 120px 26px 42px;
+    box-sizing: border-box;
+    background:
+        linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.64)),
+        url("icon.jpg") center / cover no-repeat;
+}
+.loading-title {
+    width: 100%;
+    text-align: center;
+    color: #fff7c2;
+    text-shadow:
+        0 4px 0 #70320e,
+        0 8px 0 #2b1205,
+        0 0 18px rgba(255, 216, 112, 0.95);
+    font-weight: 1000;
+    letter-spacing: 0;
+}
+.loading-title span {
+    display: block;
+    font-size: clamp(42px, 14vw, 74px);
+    line-height: 1.05;
+    -webkit-text-stroke: 2px #2b1205;
+}
+.loading-title small {
+    display: block;
+    margin-top: 12px;
+    font-size: clamp(17px, 5vw, 25px);
+    color: #fff;
+    -webkit-text-stroke: 1px #2b1205;
+}
+.loading-progress-wrap {
+    width: min(360px, 86%);
+    height: 22px;
+    border: 3px solid #171717;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.2);
+    overflow: hidden;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.45), 0 5px 0 rgba(0,0,0,0.38);
+}
+.loading-progress-bar {
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #64e8ff, #fff07a, #ff9f43);
+    box-shadow: 0 0 14px rgba(255, 232, 104, 0.85);
+    transition: width 120ms linear;
+}
+.update-modal {
+    z-index: 2200;
+    background: rgba(0,0,0,0.72);
+    padding: 24px;
+    box-sizing: border-box;
+}
+.update-panel {
+    width: min(390px, 92%);
+    padding: 22px 20px 18px;
+    box-sizing: border-box;
+    color: #1b1309;
+    border: 4px solid #171717;
+    border-radius: 8px;
+    background:
+        linear-gradient(#fffdf4, #fff1c9) padding-box,
+        linear-gradient(135deg, #4a2a12, #d8b45f 18%, #fff0a8 32%, #7b4b1f 58%, #f1d27a 78%, #3b210d) border-box;
+    box-shadow:
+        inset 0 0 0 2px #f3d98b,
+        inset 0 0 0 6px rgba(74, 42, 18, 0.18),
+        0 12px 0 rgba(0,0,0,0.32),
+        0 20px 36px rgba(0,0,0,0.45);
+}
+.update-panel h2 {
+    margin: 0 0 12px;
+    color: #4a2a12;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 1000;
+}
+.update-panel p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    line-height: 1.65;
+    font-weight: 750;
+}
+.update-sign {
+    margin: 12px 0 14px;
+    text-align: right;
+    font-weight: 900;
+    color: #4a2a12;
+}
+#update-close-btn {
+    width: 100%;
+}
+#sudden-mode-close-btn {
+    width: 100%;
+}
+.action-btn.awakened-locked {
+    background: #292929 !important;
+    color: #8a8a8a !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+.battle-toast {
+    position: absolute;
+    left: 50%;
+    bottom: 24%;
+    transform: translateX(-50%);
+    z-index: 1500;
+    min-width: 180px;
+    max-width: min(80%, 360px);
+    padding: 12px 18px;
+    border: 2px solid #1b1b1b;
+    border-radius: 8px;
+    background: #fffdf4;
+    color: #111;
+    font-weight: 900;
+    text-align: center;
+    box-shadow: 0 8px 0 rgba(0,0,0,0.36);
+    animation: toast-fade 1.45s ease forwards;
+}
+@keyframes toast-fade {
+    0% { opacity: 0; transform: translate(-50%, 10px); }
+    16%, 78% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -8px); }
+}
+
 /* ================= 主菜单 / 模式选择 ================= */
 .menu-screen {
     background:
@@ -130,7 +259,14 @@ body {
     border: 1px solid #3e424b;
     border-radius: 7px;
     background: #171a20;
+    width: 100%;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
+.career-card:hover,
+.career-card:focus-visible { border-color: #f0c84b; outline: none; }
 .career-card img {
     width: 86px;
     height: 106px;
@@ -157,6 +293,63 @@ body {
 .career-card strong {
     color: #fff;
     font-size: 12px;
+}
+.career-detail-modal {
+    z-index: 1100;
+    box-sizing: border-box;
+    padding: 18px;
+    background: rgba(4, 5, 8, 0.9);
+}
+.career-detail-panel {
+    position: relative;
+    width: min(760px, 100%);
+    max-height: calc(100dvh - 36px);
+    overflow-y: auto;
+    border: 2px solid #8e7740;
+    border-radius: 8px;
+    background: #17191e;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.7);
+}
+.career-sprite-stage {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    height: 470px;
+    min-height: 0;
+    padding: 18px 42px 14px;
+    overflow: hidden;
+    background: #0d0f13;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.career-sprite-stage[class*="faction-"] { background: var(--faction-color); }
+.career-detail-sprite {
+    --career-sprite-global-offset-x: -80px;
+    --career-sprite-global-offset-y: -75px;
+    width: min(70vw, 600px);
+    aspect-ratio: 1;
+    justify-self: center;
+    align-self: center;
+    transform: translate(calc(var(--career-sprite-offset-x, 0%) + var(--career-sprite-global-offset-x)), calc(var(--career-sprite-offset-y, 0%) + var(--career-sprite-global-offset-y)));
+    background-repeat: no-repeat;
+    background-size: 700% 700%;
+    background-position: 0 0;
+    image-rendering: auto;
+}
+.career-detail-copy { padding: 18px 22px 22px; }
+.career-detail-faction {
+    display: inline-block;
+    color: #f4d772;
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+.career-detail-copy h3 { margin: 0 0 10px; color: #fff; font-size: 28px; }
+.career-detail-copy > p {
+    margin: 0 0 16px;
+    color: #d7d9de;
+    font-size: 14px;
+    line-height: 1.75;
+    text-align: justify;
 }
 
 /* ================= 角色选择 ================= */
@@ -344,15 +537,221 @@ body {
 }
 @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-/* ================= 玩法介绍动画特效 ================= */
-.tut-anim-box {
-    width: 100%; height: 120px; background: #111; border-radius: 8px; 
-    margin-bottom: 15px; display: flex; justify-content: center; align-items: center;
-    position: relative; overflow: hidden; border: 1px solid #333;
+/* ================= 玩法介绍：牧师教导 ================= */
+.tutorial-overlay {
+    z-index: 1002;
+    background:
+        linear-gradient(180deg, rgba(10, 12, 24, 0.92), rgba(8, 6, 14, 0.96)),
+        url("assets/images/arane 1.webp") center bottom / cover no-repeat;
+    align-items: stretch;
+    justify-content: center;
 }
+.tutorial-stage {
+    position: relative;
+    width: min(920px, 100%);
+    height: 100%;
+    min-height: 560px;
+    padding: 34px 28px 28px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: minmax(280px, 46%) 1fr;
+    overflow: hidden;
+}
+.tutorial-animation-panel {
+    width: min(680px, 92%);
+    justify-self: center;
+    align-self: start;
+    padding: 14px;
+    border: 2px solid rgba(255, 216, 112, 0.78);
+    border-radius: 8px;
+    background: rgba(15, 16, 24, 0.82);
+    box-shadow: 0 16px 34px rgba(0,0,0,0.35);
+}
+.tutorial-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    color: #ffe08a;
+    font-size: 18px;
+    font-weight: 900;
+    margin-bottom: 10px;
+}
+.tut-anim-box {
+    width: 100%;
+    min-height: 242px;
+    background: linear-gradient(180deg, #171b25, #0f1118);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+.tut-demo {
+    width: 100%;
+    min-height: 224px;
+    display: grid;
+    grid-template-rows: minmax(72px, 0.9fr) 136px;
+    align-items: center;
+    justify-items: center;
+    gap: 10px;
+}
+.tut-demo-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    width: 100%;
+    min-height: 72px;
+}
+.tut-demo-character {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    min-height: 136px;
+}
+.tutorial-priest-portrait {
+    position: absolute;
+    left: clamp(-86px, -8vw, -42px);
+    bottom: -40px;
+    width: min(38vw, 330px);
+    max-height: 70%;
+    object-fit: contain;
+    object-position: bottom left;
+    filter: drop-shadow(0 18px 16px rgba(0,0,0,0.5));
+    z-index: 2;
+    zoom: 1.9;
+}
+.tutorial-dialogue {
+    position: absolute;
+    left: clamp(210px, 10vw, 305px);
+    right: 14px;
+    bottom: 18px;
+    width: auto;
+    min-height: 176px;
+    padding: 18px 18px 16px;
+    box-sizing: border-box;
+    border: 4px solid #171717;
+    border-radius: 8px;
+    background:
+        linear-gradient(#fffdf4, #fff8e6) padding-box,
+        linear-gradient(135deg, #4a2a12, #d8b45f 18%, #fff0a8 32%, #7b4b1f 58%, #f1d27a 78%, #3b210d) border-box;
+    color: #171717;
+    box-shadow:
+        inset 0 0 0 2px #f3d98b,
+        inset 0 0 0 5px rgba(74, 42, 18, 0.22),
+        0 12px 0 rgba(0,0,0,0.28),
+        0 18px 34px rgba(0,0,0,0.38);
+    z-index: 3;
+}
+.tutorial-dialogue::after {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(74, 42, 18, 0.42);
+    border-radius: 4px;
+    pointer-events: none;
+}
+.tutorial-dialogue::before {
+    content: "";
+    position: absolute;
+    left: -18px;
+    bottom: 44px;
+    width: 28px;
+    height: 28px;
+    background: #fff8e6;
+    border-left: 4px solid #171717;
+    border-bottom: 4px solid #171717;
+    transform: rotate(45deg);
+}
+.tutorial-speaker {
+    display: inline-block;
+    min-width: 72px;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+    border: 2px solid #171717;
+    border-radius: 4px;
+    background: #171717;
+    color: #ffe08a;
+    font-weight: 900;
+    text-align: center;
+}
+#tutorial-text {
+    min-height: 76px;
+    margin: 0 0 14px;
+    font-size: 16px;
+    line-height: 1.65;
+    font-weight: 700;
+}
+.tutorial-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.9fr;
+    gap: 10px;
+    width: min(430px, 100%);
+    margin-left: 0;
+    margin-right: auto;
+}
+.tutorial-controls .start-btn {
+    width: 100%;
+    min-height: 48px;
+    height: auto;
+    line-height: 1.15;
+    margin: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+    letter-spacing: 0;
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+#tut-prev-btn { background: #555; color: #fff; }
+#tut-next-btn { background: #4CAF50; color: #fff; }
+#tut-close-btn { background: #d9534f; color: #fff; }
 .tut-flex { display: flex; align-items: center; justify-content: center; gap: 15px; font-size: 24px;}
 .tut-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #aaa; }
 .tut-icon { font-size: 32px; margin-bottom: 5px; }
+.tut-sprite {
+    width: 128px;
+    height: 128px;
+    flex: 0 0 128px;
+    background-repeat: no-repeat;
+    background-size: 640px 384px;
+    background-image: url("assets/images/priest sprite transparent.webp");
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.35));
+}
+.tut-demo-character .tut-sprite {
+    transform: scale(1.08);
+    transform-origin: bottom center;
+}
+.tut-sprite.charge {
+    background-image: url("assets/images/priest sprite 2 transparent.webp");
+    animation: priest-charge-frames 500ms linear infinite;
+}
+.tut-sprite.attack { animation: priest-attack-frames 500ms linear infinite; }
+.tut-sprite.shield { animation: priest-shield-frames 500ms linear infinite; }
+.tut-sprite.idle { animation: priest-idle-frames 500ms linear infinite; }
+.tut-skill-card {
+    min-width: 70px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,224,138,0.45);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.07);
+    color: #f3f0e6;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 800;
+}
+.tut-skill-card strong {
+    display: block;
+    color: #ffe08a;
+    font-size: 22px;
+    line-height: 1.1;
+}
 
 @keyframes slideRight { 0% { transform: translateX(-30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
 @keyframes slideLeft { 0% { transform: translateX(30px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
@@ -371,10 +770,54 @@ body {
 .anim-strike { animation: strike-down 1s infinite; }
 .tut-energy { width: 20px; height: 20px; }
 
+@media (max-width: 720px) {
+    .tutorial-stage {
+        min-height: 100%;
+        padding: 18px 14px;
+        grid-template-rows: 300px 1fr;
+    }
+    .tutorial-animation-panel {
+        width: 100%;
+        padding: 10px;
+    }
+    .tut-anim-box {
+        min-height: 236px;
+    }
+    .tut-demo {
+        min-height: 218px;
+        grid-template-rows: minmax(78px, 1fr) 126px;
+    }
+    .tutorial-priest-portrait {
+        width: 210px;
+        left: -64px;
+        bottom: 72px;
+        max-height: 52%;
+        transform: none; 
+    }
+    .tutorial-dialogue {
+        left: 96px;
+        right: 12px;
+        bottom: 16px;
+        width: auto;
+        min-height: 210px;
+        padding: 14px;
+    }
+    #tutorial-text {
+        font-size: 14px;
+        line-height: 1.55;
+    }
+    .tutorial-controls {
+        grid-template-columns: 1fr 1fr;
+    }
+    #tut-close-btn {
+        grid-column: 1 / -1;
+    }
+}
+
 /* ================= 战斗画面区 ================= */
 #battle-scene {
     flex: 4.5;
-    background-image: url('assets/images/arane 1.jpg');
+    background-image: var(--battle-background-image, url('assets/images/arane 1.webp'));
     background-size: cover;             /* 让图片按比例铺满整个战斗区 */
     background-position: center bottom; /* 让图片对齐底部，这样地板的透视感最好 */
     background-repeat: no-repeat;       /* 防止图片重复拼接 */
@@ -384,13 +827,208 @@ body {
     flex-direction: column;
     border-bottom: 2px solid #ffcc00;
 }
+.battle-effect-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    overflow: hidden;
+}
+.battle-effect {
+    position: absolute;
+    width: 110px;
+    height: 110px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.7));
+    pointer-events: none;
+    --flip-x: 1;
+}
+.battle-effect.instant {
+    animation: effect-pop 720ms ease-out forwards;
+}
+.battle-effect.fly {
+    animation: effect-fly 760ms ease-in-out forwards;
+}
+.battle-effect.clash {
+    width: 132px;
+    height: 132px;
+    animation: effect-clash 820ms ease-out forwards;
+}
+.battle-effect.status-effect {
+    background-size: contain;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 0 14px rgba(210, 245, 255, 0.9));
+}
+.battle-effect.barrier-effect {
+    animation: effect-status-shield 820ms ease-out forwards;
+}
+.battle-effect.barrier-broken-effect {
+    animation: effect-status-break 880ms ease-out forwards;
+}
+.battle-effect.charge-effect {
+    animation: effect-status-charge 980ms linear forwards;
+}
+.battle-effect.holy-shield-effect {
+    animation: effect-status-holy 860ms ease-out forwards;
+}
+.battle-effect.shield-effect {
+    animation: effect-status-shield-front 760ms ease-out forwards;
+    filter: drop-shadow(0 0 10px rgba(194, 222, 255, 0.9));
+}
+@keyframes effect-pop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55) scaleX(var(--flip-x)) rotate(-8deg); }
+    22% { opacity: 1; transform: translate(-50%, -50%) scale(1.12) scaleX(var(--flip-x)) rotate(4deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.35) scaleX(var(--flip-x)) rotate(12deg); }
+}
+@keyframes effect-fly {
+    0% {
+        opacity: 0;
+        left: var(--from-x);
+        top: var(--from-y);
+        transform: translate(-50%, -50%) scale(0.7) scaleX(var(--flip-x));
+    }
+    18% { opacity: 1; }
+    82% { opacity: 1; }
+    100% {
+        opacity: 0;
+        left: var(--to-x);
+        top: var(--to-y);
+        transform: translate(-50%, -50%) scale(1.12) scaleX(var(--flip-x));
+    }
+}
+@keyframes effect-clash {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.45); filter: brightness(1.1) drop-shadow(0 0 8px #fff); }
+    25% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); filter: brightness(1.8) drop-shadow(0 0 18px #fff); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); filter: brightness(1.2) drop-shadow(0 0 4px #fff); }
+}
+@keyframes effect-status-shield {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.55); }
+    28% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.18); }
+}
+@keyframes effect-status-break {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(-12deg); }
+    25% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(5deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.45) rotate(16deg); }
+}
+@keyframes effect-status-charge {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7) rotate(0deg); }
+    15% { opacity: 0.95; }
+    78% { opacity: 0.9; transform: translate(-50%, -50%) scale(1.08) rotate(-560deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.16) rotate(-720deg); }
+}
+@keyframes effect-status-holy {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    24% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+}
+@keyframes effect-status-shield-front {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.62, 0.7); }
+    24% { opacity: 1; transform: translate(-50%, -50%) scale(0.62, 1.04); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.62, 1.12); }
+}
 #status-bar {
     display: flex; justify-content: space-between; align-items: flex-start;
     padding: 12px; background: rgba(0, 0, 0, 0.4); z-index: 10;
 }
+#status-bar.ffa-status-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 6px 8px;
+    align-items: start;
+}
+#status-bar.ffa-status-bar .vs-badge {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-top: 0;
+    writing-mode: vertical-rl;
+    letter-spacing: 0;
+    font-size: 16px;
+}
+#status-bar.ffa-status-bar .status-team {
+    width: 100%;
+    gap: 0;
+}
+#status-bar.ffa-status-bar .status-team:nth-child(1) { grid-column: 1; grid-row: 1; }
+#status-bar.ffa-status-bar .status-team:nth-child(2) { grid-column: 3; grid-row: 1; }
+#status-bar.ffa-status-bar .status-team:nth-child(4) { grid-column: 1; grid-row: 2; }
+#status-bar.ffa-status-bar .status-team:nth-child(5) { grid-column: 3; grid-row: 2; }
+#status-bar.ffa-status-bar .player-status {
+    padding: 5px;
+}
+#status-bar.ffa-status-bar .name-label {
+    font-size: 12px;
+    margin-bottom: 3px;
+}
+#status-bar.ffa-status-bar .status-line {
+    min-height: 18px;
+    margin-bottom: 2px;
+}
 .player-status { width: 42%; }
 .p2 { text-align: right; }
+.name-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 25px;
+    margin-bottom: 6px;
+}
+.p2 .name-row { justify-content: flex-end; }
 .name-label { font-weight: bold; color: #ffcc00; font-size: 15px; margin-bottom: 6px; }
+.name-row .name-label { margin-bottom: 0; }
+.match-score {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 35px;
+}
+.match-score-dot {
+    width: 13px;
+    height: 13px;
+    border: 2px solid #fff4c8;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.38);
+    box-sizing: border-box;
+}
+.match-score-dot.won {
+    background: #ffd23f;
+    border-color: #fff9d7;
+    box-shadow: 0 0 8px rgba(255, 210, 63, 0.95);
+}
+.round-fight-banner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 45;
+    min-width: 250px;
+    max-width: calc(100% - 32px);
+    padding: 14px 24px;
+    color: #fff7d2;
+    font-size: 28px;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-align: center;
+    text-shadow: 0 2px 0 #442300, 0 0 12px #ffbd35;
+    background: rgba(42, 20, 8, 0.88);
+    border: 2px solid #f8cb63;
+    box-shadow: inset 0 0 0 3px rgba(102, 51, 16, 0.9), 0 0 20px rgba(255, 177, 49, 0.65);
+    pointer-events: none;
+    box-sizing: border-box;
+    transform: translate(-50%, -50%);
+}
+.round-fight-banner.show { animation: round-fight-banner 1.55s ease-in-out forwards; }
+@keyframes round-fight-banner {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+    16% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+    34% { transform: translate(-50%, -50%) scale(1); }
+    78% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.06); }
+}
 .status-line { display: flex; align-items: center; min-height: 22px; margin-bottom: 4px; flex-wrap: wrap; }
 .vs-badge { font-weight: 900; font-size: 20px; color: #fff; text-shadow: 0 0 10px red; margin-top: 10px; }
 
@@ -472,24 +1110,46 @@ body {
     font-size: 0;
 }
 .priest-sprite {
-    background-image: url("assets/images/priest sprite transparent.png");
+    background-image: url("assets/images/priest/priest_idle_sprite_sheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .warrior-sprite {
-    background-image: url("assets/images/warrior sprite 1.png");
+    background-image: url("assets/images/warrior/warrior_idle_sprite_sheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .burglar-sprite {
-    background-image: url("assets/images/burglar sprite 1.png");
+    background-image: url("assets/images/burglar/burglar_idle_sprite_sheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .metal-sprite {
-    background-image: url("assets/images/metal sprite 1.png");
+    background-image: url("assets/images/metal/metal_idle_sprite_sheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .barbarian-sprite {
-    background-image: url("assets/images/barbarian sprite 1.png");
+    background-image: url("assets/images/barbarian/barbarian_idle_spritesheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .knight-sprite {
-    background-image: url("assets/images/knight_sprite_1.png");
-    position: relative;
-    top: -10px;   
+    background-image: url("assets/images/knight/knight_idle_sprite_sheet.webp");
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+    background-size: 700px 700px;
 }
 .p2-avatar.priest-sprite,
 .p2-avatar.warrior-sprite,
@@ -501,146 +1161,231 @@ body {
     scale: -1 1;
 }
 .priest-attack {
-    animation: priest-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/priest/priest_attack_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .priest-shield {
-    animation: priest-shield-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/priest/priest_defense_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .priest-idle {
-    animation: priest-idle-frames 500ms linear infinite;
+    background-image: url("assets/images/priest/priest_idle_sprite_sheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.2;
+    transform-origin: center bottom;
 }
-.priest-charge,
-.priest-victory,
-.priest-defeat {
-    background-image: url("assets/images/priest sprite 2 transparent.png");
+.p2-avatar.priest-sprite.priest-idle {
+    scale: -1.2 1.2;
 }
 .priest-charge {
-    animation: priest-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/priest/priest_charge_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .priest-victory {
-    animation: priest-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/priest/priest_victory_sprite_sheet_clean.webp");
+    background-size: 700px 420px;
+    animation: priest-victory-frames-15 900ms step-end infinite;
+    scale: 0.9;
+    transform-origin: center bottom;
+}
+.p2-avatar.priest-sprite.priest-victory {
+    scale: -0.9 0.9;
 }
 .priest-defeat {
-    animation: priest-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/priest/priest_defeat_sprite_sheet_clean.webp");
+    background-size: 700px 560px;
+    animation: priest-defeat-frames-20 1200ms step-end 1 forwards;
 }
 .warrior-attack {
-    animation: warrior-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/warrior/warrior_attack_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .warrior-shield {
-    animation: warrior-shield-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/warrior/warrior_defense_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .warrior-idle {
-    animation: warrior-idle-frames 500ms linear infinite;
+    background-image: url("assets/images/warrior/warrior_idle_sprite_sheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.2;
+    transform-origin: center bottom;
 }
-.warrior-charge,
-.warrior-victory,
-.warrior-defeat {
-    background-image: url("assets/images/warrior sprite 2.png");
+.p2-avatar.warrior-sprite.warrior-idle {
+    scale: -1.2 1.2;
 }
 .warrior-charge {
-    animation: warrior-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/warrior/warrior_charge_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .warrior-victory {
-    animation: warrior-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/warrior/warrior_victory_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
 .warrior-defeat {
-    animation: warrior-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/warrior/warrior_defeat_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .burglar-attack {
-    animation: burglar-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/burglar/burglar_attack_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .burglar-shield {
-    animation: burglar-shield-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/burglar/burglar_defense_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .burglar-idle {
-    animation: burglar-idle-frames 500ms linear infinite;
+    background-image: url("assets/images/burglar/burglar_idle_sprite_sheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.4;
+    translate: 0 20px;
+    transform-origin: center bottom;
 }
-.burglar-charge,
-.burglar-victory,
-.burglar-defeat {
-    background-image: url("assets/images/burglar sprite 2.png");
+.p2-avatar.burglar-sprite.burglar-idle {
+    scale: -1.4 1.4;
 }
 .burglar-charge {
-    animation: burglar-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/burglar/burglar_charge_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .burglar-victory {
-    animation: burglar-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/burglar/burglar_victory_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
 .burglar-defeat {
-    animation: burglar-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/burglar/burglar_defeat_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .metal-attack {
-    animation: metal-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/metal/metal_attack_staff_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
+    scale: 1.15;
+    transform-origin: center center;
+}
+.p2-avatar.metal-sprite.metal-attack {
+    scale: -1.15 1.15;
 }
 .metal-shield {
-    animation: metal-shield-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/metal/metal_defense_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
+    scale: 1.15;
+    transform-origin: center bottom;
+}
+.p2-avatar.metal-sprite.metal-shield {
+    scale: -1.15 1.15;
 }
 .metal-idle {
-    animation: metal-idle-frames 500ms linear infinite;
+    background-image: url("assets/images/metal/metal_idle_sprite_sheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.2;
+    transform-origin: center bottom;
 }
-.metal-charge,
-.metal-victory,
-.metal-defeat {
-    background-image: url("assets/images/metal sprite 2.png");
+.p2-avatar.metal-sprite.metal-idle {
+    scale: -1.2 1.2;
 }
 .metal-charge {
-    animation: metal-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/metal/metal_charge_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .metal-victory {
-    animation: metal-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/metal/metal_victory_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
 .metal-defeat {
-    animation: metal-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/metal/metal_defeat_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .barbarian-attack {
-    animation: barbarian-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/barbarian/barbarian_attack_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .barbarian-shield {
-    animation: barbarian-shield-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/barbarian/barbarian_defense_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .barbarian-idle {
-    animation: barbarian-idle-frames 500ms linear infinite;
+    background-image: url("assets/images/barbarian/barbarian_idle_spritesheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.3;
+    translate: 0 10px;
+    transform-origin: center bottom;
 }
-.barbarian-charge,
-.barbarian-victory,
-.barbarian-defeat {
-    background-image: url("assets/images/barbarian sprite 2.png");
+.p2-avatar.barbarian-sprite.barbarian-idle {
+    scale: -1.3 1.3;
 }
 .barbarian-charge {
-    animation: barbarian-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/barbarian/barbarian_charge_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .barbarian-victory {
-    animation: barbarian-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/barbarian/barbarian_victory_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
 .barbarian-defeat {
-    animation: barbarian-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/barbarian/barbarian_defeat_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .knight-attack {
-    animation: knight-attack-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/knight/knight_attack_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .knight-shield {
-    animation: knight-shield-frames 500ms linear 1 forwards;
-    transform: scale(0.9) !important; 
-    transform-origin: bottom center;
+    background-image: url("assets/images/knight/knight_defense_shield_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .knight-idle {
-    animation: knight-idle-frames 500ms linear infinite;
-    transform: scale(1.2) !important; 
-    transform-origin: bottom center;
+    background-image: url("assets/images/knight/knight_idle_sprite_sheet.webp");
+    background-size: 700px 700px;
+    animation: barbarian-idle-frames 1250ms step-end infinite;
+    scale: 1.3;
+    transform-origin: center bottom;
 }
-.knight-charge,
-.knight-victory,
-.knight-defeat {
-    background-image: url("assets/images/knight_sprite_2.png");
+.p2-avatar.knight-sprite.knight-idle {
+    scale: -1.3 1.3;
 }
 .knight-charge {
-    animation: knight-charge-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/knight/knight_charge_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 .knight-victory {
-    animation: knight-victory-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/knight/knight_victory_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
 .knight-defeat {
-    animation: knight-defeat-frames 500ms linear 1 forwards;
+    background-image: url("assets/images/knight/knight_defeat_spritesheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end 1 forwards;
 }
 
 @keyframes priest-attack-frames {
@@ -811,47 +1556,97 @@ body {
     60%, 79.999% { background-position: -384px -256px; }
     80%, 100% { background-position: -512px -256px; }
 }
-@keyframes barbarian-attack-frames {
-    0%, 19.999% { background-position: 0 0; }
-    20%, 39.999% { background-position: -128px 0; }
-    40%, 59.999% { background-position: -256px 0; }
-    60%, 79.999% { background-position: -384px 0; }
-    80%, 100% { background-position: -512px 0; }
+@keyframes priest-victory-frames-15 {
+    0%, 6.666% { background-position: 0 0; }
+    6.667%, 13.332% { background-position: -140px 0; }
+    13.333%, 19.999% { background-position: -280px 0; }
+    20%, 26.666% { background-position: -420px 0; }
+    26.667%, 33.332% { background-position: -560px 0; }
+    33.333%, 39.999% { background-position: 0 -140px; }
+    40%, 46.666% { background-position: -140px -140px; }
+    46.667%, 53.332% { background-position: -280px -140px; }
+    53.333%, 59.999% { background-position: -420px -140px; }
+    60%, 66.666% { background-position: -560px -140px; }
+    66.667%, 73.332% { background-position: 0 -280px; }
+    73.333%, 79.999% { background-position: -140px -280px; }
+    80%, 86.666% { background-position: -280px -280px; }
+    86.667%, 93.332% { background-position: -420px -280px; }
+    93.333%, 100% { background-position: -560px -280px; }
 }
-@keyframes barbarian-shield-frames {
-    0%, 19.999% { background-position: 0 -128px; }
-    20%, 39.999% { background-position: -128px -128px; }
-    40%, 59.999% { background-position: -256px -128px; }
-    60%, 79.999% { background-position: -384px -128px; }
-    80%, 100% { background-position: -512px -128px; }
+@keyframes priest-defeat-frames-20 {
+    0%, 4.999% { background-position: 0 0; }
+    5%, 9.999% { background-position: -140px 0; }
+    10%, 14.999% { background-position: -280px 0; }
+    15%, 19.999% { background-position: -420px 0; }
+    20%, 24.999% { background-position: -560px 0; }
+    25%, 29.999% { background-position: 0 -140px; }
+    30%, 34.999% { background-position: -140px -140px; }
+    35%, 39.999% { background-position: -280px -140px; }
+    40%, 44.999% { background-position: -420px -140px; }
+    45%, 49.999% { background-position: -560px -140px; }
+    50%, 54.999% { background-position: 0 -280px; }
+    55%, 59.999% { background-position: -140px -280px; }
+    60%, 64.999% { background-position: -280px -280px; }
+    65%, 69.999% { background-position: -420px -280px; }
+    70%, 74.999% { background-position: -560px -280px; }
+    75%, 79.999% { background-position: 0 -420px; }
+    80%, 84.999% { background-position: -140px -420px; }
+    85%, 89.999% { background-position: -280px -420px; }
+    90%, 94.999% { background-position: -420px -420px; }
+    95%, 100% { background-position: -560px -420px; }
+}
+@keyframes barbarian-sheet-24-frames {
+    0%, 4.166% { background-position: 0 0; }
+    4.167%, 8.332% { background-position: -140px 0; }
+    8.333%, 12.499% { background-position: -280px 0; }
+    12.5%, 16.666% { background-position: -420px 0; }
+    16.667%, 20.832% { background-position: -560px 0; }
+    20.833%, 24.999% { background-position: -700px 0; }
+    25%, 29.166% { background-position: 0 -140px; }
+    29.167%, 33.332% { background-position: -140px -140px; }
+    33.333%, 37.499% { background-position: -280px -140px; }
+    37.5%, 41.666% { background-position: -420px -140px; }
+    41.667%, 45.832% { background-position: -560px -140px; }
+    45.833%, 49.999% { background-position: -700px -140px; }
+    50%, 54.166% { background-position: 0 -280px; }
+    54.167%, 58.332% { background-position: -140px -280px; }
+    58.333%, 62.499% { background-position: -280px -280px; }
+    62.5%, 66.666% { background-position: -420px -280px; }
+    66.667%, 70.832% { background-position: -560px -280px; }
+    70.833%, 74.999% { background-position: -700px -280px; }
+    75%, 79.166% { background-position: 0 -420px; }
+    79.167%, 83.332% { background-position: -140px -420px; }
+    83.333%, 87.499% { background-position: -280px -420px; }
+    87.5%, 91.666% { background-position: -420px -420px; }
+    91.667%, 95.832% { background-position: -560px -420px; }
+    95.833%, 100% { background-position: -700px -420px; }
 }
 @keyframes barbarian-idle-frames {
-    0%, 19.999% { background-position: 0 -256px; }
-    20%, 39.999% { background-position: -128px -256px; }
-    40%, 59.999% { background-position: -256px -256px; }
-    60%, 79.999% { background-position: -384px -256px; }
-    80%, 100% { background-position: -512px -256px; }
-}
-@keyframes barbarian-charge-frames {
-    0%, 19.999% { background-position: 0 0; }
-    20%, 39.999% { background-position: -128px 0; }
-    40%, 59.999% { background-position: -256px 0; }
-    60%, 79.999% { background-position: -384px 0; }
-    80%, 100% { background-position: -512px 0; }
-}
-@keyframes barbarian-victory-frames {
-    0%, 19.999% { background-position: 0 -128px; }
-    20%, 39.999% { background-position: -128px -128px; }
-    40%, 59.999% { background-position: -256px -128px; }
-    60%, 79.999% { background-position: -384px -128px; }
-    80%, 100% { background-position: -512px -128px; }
-}
-@keyframes barbarian-defeat-frames {
-    0%, 19.999% { background-position: 0 -256px; }
-    20%, 39.999% { background-position: -128px -256px; }
-    40%, 59.999% { background-position: -256px -256px; }
-    60%, 79.999% { background-position: -384px -256px; }
-    80%, 100% { background-position: -512px -256px; }
+    0%, 3.999% { background-position: 0 0; }
+    4%, 7.999% { background-position: -140px 0; }
+    8%, 11.999% { background-position: -280px 0; }
+    12%, 15.999% { background-position: -420px 0; }
+    16%, 19.999% { background-position: -560px 0; }
+    20%, 23.999% { background-position: 0 -140px; }
+    24%, 27.999% { background-position: -140px -140px; }
+    28%, 31.999% { background-position: -280px -140px; }
+    32%, 35.999% { background-position: -420px -140px; }
+    36%, 39.999% { background-position: -560px -140px; }
+    40%, 43.999% { background-position: 0 -280px; }
+    44%, 47.999% { background-position: -140px -280px; }
+    48%, 51.999% { background-position: -280px -280px; }
+    52%, 55.999% { background-position: -420px -280px; }
+    56%, 59.999% { background-position: -560px -280px; }
+    60%, 63.999% { background-position: 0 -420px; }
+    64%, 67.999% { background-position: -140px -420px; }
+    68%, 71.999% { background-position: -280px -420px; }
+    72%, 75.999% { background-position: -420px -420px; }
+    76%, 79.999% { background-position: -560px -420px; }
+    80%, 83.999% { background-position: 0 -560px; }
+    84%, 87.999% { background-position: -140px -560px; }
+    88%, 91.999% { background-position: -280px -560px; }
+    92%, 95.999% { background-position: -420px -560px; }
+    96%, 100% { background-position: -560px -560px; }
 }
 @keyframes knight-attack-frames {
     0%, 19.999% { background-position: 0 0; }

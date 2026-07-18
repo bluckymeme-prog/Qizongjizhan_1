@@ -10,20 +10,39 @@
     
     <div id="game-container">
 
+        <!-- ================= 初始加载界面 ================= -->
+        <div id="loading-screen" class="overlay loading-screen">
+            <div class="loading-title">
+                <span>气宗极战</span>
+                <small>——小肥鲸工作室出品</small>
+            </div>
+            <div class="loading-progress-wrap">
+                <div id="loading-progress-bar" class="loading-progress-bar"></div>
+            </div>
+        </div>
+
         <!-- ================= 玩法介绍弹窗 ================= -->
-        <div id="tutorial-modal" class="overlay hidden" style="z-index: 1002; background: rgba(0,0,0,0.95);">
-            <div class="tutorial-content" style="width: 85%; max-width: 400px; background: #222; padding: 20px; border-radius: 12px; border: 2px solid #4CAF50; display: flex; flex-direction: column; align-items: center;">
-                <h3 style="color: #4CAF50; margin-top: 0; margin-bottom: 15px;">玩法教学 (<span id="tut-step-counter">1/8</span>)</h3>
-                
-                <div id="tutorial-animation-box" class="tut-anim-box"></div>
-                
-                <p id="tutorial-text" class="story-text" style="font-size: 15px; min-height: 110px; width: 100%; box-sizing: border-box; text-align: left; background: none; padding: 0;"></p>
-                
-                <div style="display: flex; gap: 10px; width: 100%;">
-                    <button id="tut-prev-btn" class="start-btn" style="flex:1; background: #555; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">上一步</button>
-                    <button id="tut-next-btn" class="start-btn" style="flex:1; background: #4CAF50; color: #fff; height: 40px; line-height: 40px; font-size: 14px;">下一步</button>
+        <div id="tutorial-modal" class="overlay hidden tutorial-overlay">
+            <div class="tutorial-stage">
+                <div class="tutorial-animation-panel">
+                    <div class="tutorial-title-row">
+                        <span>牧师的战斗教导</span>
+                        <span id="tut-step-counter">1 / 8</span>
+                    </div>
+                    <div id="tutorial-animation-box" class="tut-anim-box"></div>
                 </div>
-                <button id="tut-close-btn" class="start-btn" style="width: 100%; background: #d9534f; color: #fff; margin-top: 10px; height: 40px; line-height: 40px; font-size: 14px;">跳过/关闭</button>
+
+                <img class="tutorial-priest-portrait" src="assets/images/priest com.webp" alt="牧师">
+
+                <div class="tutorial-dialogue">
+                    <div class="tutorial-speaker">牧师</div>
+                    <p id="tutorial-text"></p>
+                    <div class="tutorial-controls">
+                        <button id="tut-prev-btn" class="start-btn" type="button">上一步</button>
+                        <button id="tut-next-btn" class="start-btn" type="button">下一步</button>
+                        <button id="tut-close-btn" class="start-btn" type="button">关闭</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -72,7 +91,29 @@
             </div>
         </div>
 
+        <!-- ================= 更新公告 ================= -->
+        <div id="update-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel">
+                <h2>更新公告</h2>
+                <p>1. 我们发现电刀对于冰刀来说过于强势，大大缩减了冰刀的使用场景，于是我们调整了冰刀和电刀的作用，让冰刀专门对付法术攻击，而电刀负责应对刀的攻击。</p>
+                <p>2. 刀不需要消耗气过于强势，因此我们进行了调整：普通刀不需要消耗气，但是觉醒之后的特殊刀会消耗一点气并且觉醒之后强制使用。</p>
+                <div class="update-sign">——小肥鲸工作室</div>
+                <button id="update-close-btn" class="start-btn" type="button">确认</button>
+            </div>
+        </div>
+
         <!-- ================= 人机模式界面 ================= -->
+        <div id="sudden-mode-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel">
+                <h2>突然死亡模式</h2>
+                <p>1. 双方开局均为 1 点生命、3 点气。</p>
+                <p>2. 普通刀也会消耗 1 点气。</p>
+                <p>3. 冰刀和电刀专门用于对抗火冲与狂雷：冰刀造成 1 点伤害，电刀造成麻痹。</p>
+                <p>4. 其余技能规则保持不变。</p>
+                <button id="sudden-mode-close-btn" class="start-btn" type="button">确认</button>
+            </div>
+        </div>
+
         <div id="pve-mode-screen" class="overlay menu-screen hidden" style="z-index: 999;">
             <div class="menu-panel">
                 <button class="menu-back-btn" type="button" data-back="main">返回</button>
@@ -80,7 +121,9 @@
                 <h2 class="role-screen-title">选择对战模式</h2>
                 <div class="mode-choice-grid">
                     <button class="mode-choice-btn active" type="button" data-mode="1v1">1v1</button>
+                    <button class="mode-choice-btn" type="button" data-mode="sudden">突然死亡模式</button>
                     <button class="mode-choice-btn" type="button" data-mode="2v2">2v2</button>
+                    <button class="mode-choice-btn" type="button" data-mode="ffa">四人乱斗</button>
                 </div>
                 <label class="difficulty-label" for="cpu-difficulty">人机难度</label>
                 <select id="cpu-difficulty" class="picker-inner difficulty-select">
@@ -100,6 +143,25 @@
                 <h2 class="role-screen-title">所有职业信息</h2>
             </header>
             <div id="career-card-grid" class="career-card-grid"></div>
+        </div>
+
+        <div id="career-detail-modal" class="overlay career-detail-modal hidden" aria-hidden="true">
+            <article class="career-detail-panel" role="dialog" aria-modal="true" aria-labelledby="career-detail-name">
+                <button id="close-career-detail" class="role-detail-close" type="button" aria-label="Close career introduction">&times;</button>
+                <div id="career-sprite-stage" class="career-sprite-stage">
+                    <div id="career-detail-sprite" class="career-detail-sprite" role="img" aria-label=""></div>
+                </div>
+                <div class="career-detail-copy">
+                    <span id="career-detail-faction" class="career-detail-faction"></span>
+                    <h3 id="career-detail-name"></h3>
+                    <p id="career-detail-description"></p>
+                    <div class="role-skill-box">
+                        <span>Role Skill</span>
+                        <strong id="career-detail-skill-name"></strong>
+                        <p id="career-detail-skill"></p>
+                    </div>
+                </div>
+            </article>
         </div>
 
         <!-- ================= 角色选择界面 ================= -->
@@ -170,7 +232,10 @@
         <div id="battle-scene">
             <div id="status-bar">
                 <div class="player-status p1">
-                    <div id="name-display-a" class="name-label">玩家 A</div>
+                    <div class="name-row">
+                        <div id="name-display-a" class="name-label">玩家 A</div>
+                        <div id="match-score-a" class="match-score" aria-label="胜局"></div>
+                    </div>
                     <div class="status-line" id="hp-a"></div>
                     <div class="status-line" id="energy-a"></div>
                     <div class="status-line buffs">
@@ -181,7 +246,10 @@
                 </div>
                 <div class="vs-badge">VS</div>
                 <div class="player-status p2">
-                    <div id="name-display-b" class="name-label">CPU</div>
+                    <div class="name-row">
+                        <div id="name-display-b" class="name-label">CPU</div>
+                        <div id="match-score-b" class="match-score" aria-label="胜局"></div>
+                    </div>
                     <div class="status-line" id="hp-b" style="justify-content: flex-end;"></div>
                     <div class="status-line" id="energy-b" style="justify-content: flex-end;"></div>
                     <div class="status-line buffs" style="justify-content: flex-end;">
@@ -191,6 +259,8 @@
                     </div>
                 </div>
             </div>
+
+            <div id="round-fight-banner" class="round-fight-banner hidden" role="status"></div>
 
             <div class="stage-area">
                 <div class="character-box">
