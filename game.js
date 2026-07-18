@@ -1745,8 +1745,36 @@ Game.prototype.startGame = function() {
     this.bindActionEvents();
     const restartBtn = document.getElementById('restart-btn');
     const returnRoleBtn = document.getElementById('return-role-btn');
+    const battleReturnBtn = document.getElementById('battle-return-btn');
+    const battleReturnModal = document.getElementById('battle-return-modal');
+    const battleReturnCancelBtn = document.getElementById('battle-return-cancel-btn');
+    const battleReturnConfirmBtn = document.getElementById('battle-return-confirm-btn');
+    const closeBattleReturnModal = () => {
+        if (!battleReturnModal) return;
+        battleReturnModal.classList.add('hidden');
+        battleReturnModal.setAttribute('aria-hidden', 'true');
+    };
+    const openBattleReturnModal = () => {
+        if (!battleReturnModal) return;
+        battleReturnModal.classList.remove('hidden');
+        battleReturnModal.setAttribute('aria-hidden', 'false');
+        battleReturnCancelBtn?.focus();
+    };
     restartBtn.onclick = () => this.resetCurrentMatch();
     if (returnRoleBtn) returnRoleBtn.onclick = () => this.returnToRoleSelect();
+    if (battleReturnBtn) battleReturnBtn.onclick = openBattleReturnModal;
+    if (battleReturnCancelBtn) battleReturnCancelBtn.onclick = closeBattleReturnModal;
+    if (battleReturnConfirmBtn) {
+        battleReturnConfirmBtn.onclick = () => {
+            closeBattleReturnModal();
+            this.returnToRoleSelect();
+        };
+    }
+    if (battleReturnModal) {
+        battleReturnModal.onclick = event => {
+            if (event.target === battleReturnModal) closeBattleReturnModal();
+        };
+    }
     if (this.isBo3Mode()) this.resetBo3Match();
     this.battleResult = null;
     this.pendingHumanIndex = 0;
@@ -3054,51 +3082,51 @@ Game.prototype.updateUI = function() {
         return result;
     }
 
-    const renderHP = (hp) => hp <= 0 ? '<span style="font-size:18px;">💀</span>' : '<span class="icon heart">❤️</span>'.repeat(hp);
-    const renderEnergy = (en) => en <= 0 ? '<span class="empty-text">空</span>' : '<div class="energy-circle"></div>'.repeat(en);
-    const renderBarrier = (count) => count > 0 ? '<span class="icon active">🛡️</span>'.repeat(count) : '<span class="icon inactive">🛡️</span> <span class="empty-text">破碎</span>';
+    const renderHP = hp => hp <= 0 ? '<span style="font-size:18px;">HP 0</span>' : '<span class="icon heart">HP</span>'.repeat(hp);
+    const renderEnergy = energy => energy <= 0 ? '<span class="empty-text">0</span>' : '<div class="energy-circle"></div>'.repeat(energy);
+    const renderBarrier = count => count > 0 ? '<span class="icon active">B</span>'.repeat(count) : '<span class="icon inactive">B</span> <span class="empty-text">Broken</span>';
     const renderSword = (count, state) => {
-        if (state === 'BROKEN' || count <= 0) return '<span class="icon inactive">🗡️</span> <span class="empty-text">震碎</span>';
-        const suffix = state === 'UNLOCKED' ? '<span class="unlocked-text">[觉醒]</span>' : '';
-        return '<span class="icon active">🗡️</span>'.repeat(count) + suffix;
+        if (state === 'BROKEN' || count <= 0) return '<span class="icon inactive">S</span> <span class="empty-text">Broken</span>';
+        return '<span class="icon active">S</span>'.repeat(count) + (state === 'UNLOCKED' ? '<span class="unlocked-text">[Awakened]</span>' : '');
     };
-    const renderParalysis = (isPara) => isPara ? '<span class="icon paralyzed">⚡</span> <span class="para-text">麻痹中</span>' : '<span class="icon inactive">⚡</span>';
+    const renderParalysis = paralyzed => paralyzed ? '<span class="icon paralyzed">P</span> <span class="para-text">Paralyzed</span>' : '<span class="icon inactive">P</span>';
 
     this.getPlayers().forEach(player => {
         const id = player.id.toLowerCase();
-        const nameEl = document.getElementById(`name-display-${id}`);
-        if (!nameEl) return;
-        nameEl.innerText = `${this.playerLabel(player)} [${player.getRoleName()}]`;
+        const name = document.getElementById(`name-display-${id}`);
+        if (!name) return;
+        name.innerText = `${this.playerLabel(player)} [${player.getRoleName()}]`;
         document.getElementById(`hp-${id}`).innerHTML = renderHP(player.hp);
         document.getElementById(`energy-${id}`).innerHTML = renderEnergy(player.energy);
         document.getElementById(`barrier-${id}`).innerHTML = renderBarrier(player.barrierCount);
         document.getElementById(`sword-${id}`).innerHTML = renderSword(player.swordCount, player.swordState);
         document.getElementById(`paralysis-${id}`).innerHTML = renderParalysis(player.isParalyzed);
         const avatar = document.querySelector(`.avatar-${id}`);
-        if (avatar) this.updateBattleAvatar(avatar, player, player.id === 'A' ? '🙂' : '🤖', this.battleResult?.[player.id]);
+        if (avatar) this.updateBattleAvatar(avatar, player, player.id === 'A' ? 'Player' : 'CPU', this.battleResult?.[player.id]);
         const lock = document.getElementById(`lock-status-${id}`);
-        if (lock) {
-            if (player.hp <= 0) { lock.classList.add('hidden'); }
-            else if (player.isParalyzed) { lock.innerText = '⚡ 麻痹'; lock.classList.remove('hidden'); }
-            else if (player.currentAction) { lock.innerText = '🔒 已锁定'; lock.classList.remove('hidden'); }
-            else if (player.id === 'A') { lock.innerText = '等待选择...'; lock.classList.toggle('hidden', player !== this.currentHumanActor()); }
-            else { lock.innerText = '思考中...'; lock.classList.remove('hidden'); }
-        }
+        if (!lock) return;
+        if (player.hp <= 0) lock.classList.add('hidden');
+        else if (player.isParalyzed) { lock.innerText = 'Paralyzed'; lock.classList.remove('hidden'); }
+        else if (player.currentAction) { lock.innerText = 'Locked'; lock.classList.remove('hidden'); }
+        else if (player.id === 'A') { lock.innerText = 'Waiting...'; lock.classList.toggle('hidden', player !== this.currentHumanActor()); }
+        else { lock.innerText = 'Thinking...'; lock.classList.remove('hidden'); }
     });
 
-    document.getElementById('log-text').innerText = this.roundLog;
+    const log = document.getElementById('log-text');
+    if (log) log.innerText = this.roundLog;
     const logContainer = document.getElementById('log-container');
-    logContainer.scrollTop = logContainer.scrollHeight;
+    if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
 
     const actor = this.currentHumanActor();
-    document.getElementById('steal-btn-a').style.display = actor?.role === 'ROGUE' ? 'inline-block' : 'none';
-    document.getElementById('heal-btn-a').style.display = actor?.role === 'PRIEST' ? 'inline-block' : 'none';
-    document.querySelectorAll('#control-panel button.action-btn').forEach(btn => {
-        const action = btn.dataset.action;
-        if (action) {
-            const isSwordMenu = action === Action.SWORD && actor?.swordState === 'UNLOCKED' && actor.swordCount > 0 && !actor.isParalyzed;
-            btn.disabled = !actor || !!actor.currentAction || !!this.battleResult || (!isSwordMenu && !this.canUseAction(actor, action));
-        }
+    const steal = document.getElementById('steal-btn-a');
+    const heal = document.getElementById('heal-btn-a');
+    if (steal) steal.style.display = actor?.role === 'ROGUE' ? 'inline-block' : 'none';
+    if (heal) heal.style.display = actor?.role === 'PRIEST' ? 'inline-block' : 'none';
+    document.querySelectorAll('#control-panel button.action-btn').forEach(button => {
+        const action = button.dataset.action;
+        if (!action) return;
+        const awakenedSword = action === Action.SWORD && actor?.swordState === 'UNLOCKED' && actor.swordCount > 0 && !actor.isParalyzed;
+        button.disabled = !actor || !!actor.currentAction || !!this.battleResult || (!awakenedSword && !this.canUseAction(actor, action));
     });
     this.syncSwordControls(actor);
 };
@@ -3293,35 +3321,36 @@ Game.prototype.resolveTeamRound = function() {
     });
 
     const stolenCharge = new Set();
-    allActors.forEach(actor => {
+
+    [pA, pB].forEach(actor => {
+        const target = actor === pA ? pB : pA;
         if (actor.currentAction === Action.STEAL) {
             actor.hasStolen = true;
-            const target = actor.currentTarget;
-            if (target?.currentAction === Action.CHARGE) {
+            if (target.currentAction === Action.CHARGE) {
                 stolenCharge.add(target.id);
                 actor.energy += 1;
-                log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，偷走了 ${this.playerLabel(target)} 正在凝聚的气。\n`;
+                specialLog += `${actor === pA ? pA.name : 'CPU'} 使用【神偷】，偷走了${target === pA ? pA.name : 'CPU'}正在凝聚的气。\n`;
             } else {
-                log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，但目标没有集气。\n`;
+                specialLog += `${actor === pA ? pA.name : 'CPU'} 使用【神偷】，但目标没有集气，圣盾效果生效。\n`;
             }
         }
     });
 
-    allActors.forEach(actor => {
+    [pA, pB].forEach(actor => {
         const action = actor.currentAction;
         if (action === Action.CHARGE && !stolenCharge.has(actor.id)) actor.energy += 1;
         if (action === Action.HOLY_SHIELD) actor.energy -= 1;
         if (action === Action.MERCY_DEW) {
             actor.energy -= 1;
             actor.hasHealed = true;
-            const target = actor.currentTarget || actor;
-            if (target.hp < target.maxHp) {
-                target.hp += 1;
-                log += `💧 ${this.playerLabel(actor)} 对 ${this.playerLabel(target)} 使用【慈露】，恢复 1 点生命并展开圣盾。\n`;
+            if (actor.hp < actor.maxHp) {
+                actor.hp += 1;
+                specialLog += `${actor === pA ? pA.name : 'CPU'} 使用【慈露】，恢复1点生命并展开圣盾。\n`;
             } else {
-                log += `💧 ${this.playerLabel(actor)} 使用【慈露】，圣盾生效，但目标生命已满。\n`;
+                specialLog += `${actor === pA ? pA.name : 'CPU'} 使用【慈露】，圣盾效果生效。\n`;
             }
         }
+        actor.energy = Math.max(0, actor.energy);
     });
 
     const rangeHitTargets = new Set();
@@ -3503,9 +3532,9 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
 
     if (damage > 0) {
         target.hp -= damage;
-        log += `💥 ${this.playerLabel(actor)} 的【${this.getActionName(action)}】命中 ${this.playerLabel(target)}，造成 ${damage} 点伤害。\n`;
+        log += `Hit: ${this.playerLabel(actor)} used ${this.getActionName(action)} on ${this.playerLabel(target)} for ${damage} damage.\n`;
     } else if (!log) {
-        log += `⚔ ${this.playerLabel(actor)} 的【${this.getActionName(action)}】未造成有效伤害。\n`;
+        log += `No effect: ${this.playerLabel(actor)} used ${this.getActionName(action)}.\n`;
     }
     return log;
 };
@@ -3522,11 +3551,7 @@ Game.prototype.finishTeamRound = function(log) {
             player.isParalyzed = true;
             player.nextTurnParalyze = false;
         }
-        player.currentAction = null;
-        player.currentTarget = null;
     });
-    this.pendingHumanIndex = 0;
-    this.battleResult = null;
 
     if (this.gameMode === 'ffa') {
         const alivePlayers = this.alive(this.getPlayers());
@@ -3578,6 +3603,286 @@ Game.prototype.finishTeamRound = function(log) {
     this.continueCpuOnlyRound();
 };
 
+Game.prototype.resolveTeamRound = function() {
+    const allActors = (this.gameMode === 'ffa'
+        ? this.getPlayers()
+        : [...this.humanTeam(), ...this.cpuTeam()]
+    ).filter(player => player.hp > 0);
+    let log = this.gameMode === 'ffa' ? `【四人乱斗 回合结算】\n` : `【2v2 回合结算】\n`;
+    allActors.forEach(player => {
+        const targetText = player.currentTarget ? ` -> ${this.playerLabel(player.currentTarget)}` : '';
+        log += `${this.playerLabel(player)} 选择了 [${this.getActionName(player.currentAction)}]${targetText}\n`;
+    });
+
+    const stolenCharge = new Set();
+    allActors.forEach(actor => {
+        if (actor.currentAction === Action.STEAL) {
+            actor.hasStolen = true;
+            const target = actor.currentTarget;
+            if (target?.currentAction === Action.CHARGE) {
+                stolenCharge.add(target.id);
+                actor.energy += 1;
+                log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，偷走了 ${this.playerLabel(target)} 正在凝聚的气。\n`;
+            } else {
+                log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，但目标没有集气。\n`;
+            }
+        }
+    });
+
+    allActors.forEach(actor => {
+        const action = actor.currentAction;
+        if (action === Action.CHARGE && !stolenCharge.has(actor.id)) actor.energy += 1;
+        if (action === Action.FIRE) actor.energy -= 2;
+        if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(action)) actor.energy -= 1;
+        if (action === Action.LIGHTNING) actor.energy -= 4;
+        if (action === Action.HOLY_SHIELD) actor.energy -= 1;
+        if (action === Action.MERCY_DEW) {
+            actor.energy -= 1;
+            actor.hasHealed = true;
+            const target = actor.currentTarget || actor;
+            if (target.hp < target.maxHp) {
+                target.hp += 1;
+                log += `💧 ${this.playerLabel(actor)} 对 ${this.playerLabel(target)} 使用【慈露】，恢复 1 点生命并展开圣盾。\n`;
+            } else {
+                log += `💧 ${this.playerLabel(actor)} 使用【慈露】，圣盾生效，但目标生命已满。\n`;
+            }
+        }
+    });
+
+    const rangeHitTargets = new Set();
+
+    // 1. 定义技能出手优先级（数字越大，出手越快）
+    const getActionPriority = (action) => {
+        if (action === Action.LIGHTNING) return 3;
+        if (action === Action.FIRE) return 2;
+        if ([Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(action)) return 1;
+        return 0; // 其他非攻击技能
+    };
+
+    // 2. 筛选出所有发动攻击的角色，并按优先级降序排列
+    const attackingActors = allActors.filter(actor =>
+        [Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD, Action.FIRE, Action.LIGHTNING].includes(actor.currentAction)
+    ).sort((a, b) => getActionPriority(b.currentAction) - getActionPriority(a.currentAction));
+
+    // 3. 按优先级依次结算攻击
+    attackingActors.forEach(actor => {
+        // 【核心裁定】：如果该角色在出手前，已经被更高优先级的技能击杀，则直接打断其攻击！
+        if (actor.hp <= 0) {
+            log += `💀 ${this.playerLabel(actor)} 在出手前已被击倒，【${this.getActionName(actor.currentAction)}】被打断！\n`;
+            return;
+        }
+
+        const action = actor.currentAction;
+        const isRangeAction = [Action.LIGHTNING, Action.FIRE].includes(action);
+        
+        // 动态获取当前依然存活的目标（防止鞭尸）
+        const targets = isRangeAction
+            ? this.alive(this.opponentsOf(actor))
+            : [actor.currentTarget].filter(t => t && t.hp > 0);
+
+        targets.forEach(target => {
+            if (isRangeAction && rangeHitTargets.has(target.id)) {
+                log += `🌊 ${this.playerLabel(target)} 本回合已承受过范围技能伤害，${this.playerLabel(actor)} 的【${this.getActionName(action)}】不再重复造成伤害。\n`;
+                return;
+            }
+            const beforeHp = target.hp;
+            log += this.applyTeamAttack(actor, target, action);
+            
+            // 记录范围伤害命中情况
+            if (isRangeAction && target.hp < beforeHp) rangeHitTargets.add(target.id);
+        });
+    });
+
+    allActors.forEach(actor => {
+        const action = actor.currentAction;
+        if (action === Action.SWORD && actor.swordState === 'NORMAL') {
+            actor.swordState = 'UNLOCKED';
+            actor.specialSwordCharges = actor.role === 'WARRIOR' ? 2 : 1;
+        }
+        else if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(action) && actor.swordCount > 0) {
+            actor.specialSwordCharges = Math.max(0, (actor.specialSwordCharges || 1) - 1);
+            if (actor.specialSwordCharges <= 0) {
+                actor.swordState = 'NORMAL';
+                log += `🔧 ${this.playerLabel(actor)} 的特武能量耗尽，变回普通刀。\n`;
+            }
+        }
+    });
+
+    this.finishTeamRound(log);
+};
+
+Game.prototype.applyTeamAttack = function(actor, target, action) {
+    if (!target || target.hp <= 0) return '';
+    const defense = target.currentAction;
+    const holyDefense = [Action.HOLY_SHIELD, Action.STEAL, Action.MERCY_DEW].includes(defense);
+    let damage = 0;
+    let log = '';
+
+    if (holyDefense) {
+        damage = action === Action.LIGHTNING ? 1 : 0;
+        // 加入 && !target.hasBrokenSword 判定
+        if (target.role === 'PALADIN' && defense === Action.HOLY_SHIELD && action === Action.SWORD && !target.hasBrokenSword) {
+            target.hasBrokenSword = true; // 消耗特权
+            actor.swordCount -= 1;
+            if (actor.swordCount <= 0) { actor.swordState = 'BROKEN'; actor.specialSwordCharges = 0; }
+            if (actor.role === 'METAL_WARRIOR') actor.barrierCount += 1;
+            return `🛡✨ ${this.playerLabel(target)} 的圣骑士圣盾震碎了 ${this.playerLabel(actor)} 的普通刀（碎刀特权已消耗）！\n`;
+        }
+        log += damage > 0
+            ? `⚡ ${this.playerLabel(actor)} 的【狂雷】击穿圣盾，对 ${this.playerLabel(target)} 造成 1 点余波伤害。\n`
+            : `🛡 ${this.playerLabel(target)} 的圣盾化解了 ${this.playerLabel(actor)} 的【${this.getActionName(action)}】。\n`;
+    } else if (action === Action.LIGHTNING) {
+        if (defense === Action.LIGHTNING) {
+            log += `⚡ ${this.playerLabel(actor)} 与 ${this.playerLabel(target)} 的狂雷正面冲突，雷势互相抵消。\n`;
+        } else if (defense === Action.CHARGE || defense === Action.ICE_SWORD) {
+            log += `⚡ ${this.playerLabel(actor)} 的【狂雷】被 ${this.playerLabel(target)} 避开或打断。\n`;
+        } else {
+            damage = 3;
+        }
+    } else if (action === Action.FIRE) {
+        if (defense === Action.FIRE) {
+            log += `🔥 ${this.playerLabel(actor)} 与 ${this.playerLabel(target)} 的火冲正面相撞，火势互相抵消。\n`;
+        } else if (defense === Action.LIGHTNING) {
+            log += `⚡ ${this.playerLabel(target)} 的狂雷压过了 ${this.playerLabel(actor)} 的火冲。\n`;
+        } else if (defense === Action.BARRIER) {
+            log += `🛡 ${this.playerLabel(target)} 的屏障挡下了火冲。\n`;
+        } else if (defense !== Action.ICE_SWORD) {
+            damage = 2;
+        }
+    } else if (action === Action.SWORD) {
+        if ([Action.SWORD, Action.ICE_SWORD, Action.ELEC_SWORD].includes(defense)) {
+            log += `⚔ ${this.playerLabel(actor)} 与 ${this.playerLabel(target)} 的刀势互相碰撞，未造成伤害。\n`;
+            return log;
+        }
+        if (defense === Action.LIGHTNING) {
+            log += `⚡ ${this.playerLabel(target)} 的狂雷压制了 ${this.playerLabel(actor)} 的普通刀。\n`;
+            return log;
+        }
+        if (defense === Action.SHIELD && action === Action.SWORD) {
+            actor.swordCount -= 1;
+            if (actor.swordCount <= 0) { actor.swordState = 'BROKEN'; actor.specialSwordCharges = 0; }
+            if (actor.role === 'METAL_WARRIOR') actor.barrierCount += 1;
+            log += `🛡 ${this.playerLabel(target)} 的盾牌震碎了 ${this.playerLabel(actor)} 的普通刀。\n`;
+            return log;
+        }
+        if (defense === Action.BARRIER) {
+            target.barrierCount -= 1;
+            if (target.role === 'METAL_WARRIOR') {
+                target.swordCount += 1;
+                if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
+            }
+            log += `💥 ${this.playerLabel(actor)} 击碎了 ${this.playerLabel(target)} 的 1 层屏障。\n`;
+            return log;
+        }
+        if (defense !== Action.SHIELD && defense !== Action.ELEC_SWORD) {
+            damage = 1;
+        }
+    } else if (action === Action.ICE_SWORD) {
+        if ([Action.FIRE, Action.LIGHTNING].includes(defense)) {
+            damage = 1;
+            log += `❄ ${this.playerLabel(actor)} 的冰刀破解了 ${this.playerLabel(target)} 的【${this.getActionName(defense)}】。\n`;
+        } else if (defense === Action.CHARGE) {
+            damage = 1;
+        } else if (defense === Action.BARRIER) {
+            target.barrierCount -= 1;
+            if (target.role === 'METAL_WARRIOR') {
+                target.swordCount += 1;
+                if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
+            }
+            log += `💥 ${this.playerLabel(actor)} 的冰刀击碎了 ${this.playerLabel(target)} 的 1 层屏障。\n`;
+            return log;
+        }
+    } else if (action === Action.ELEC_SWORD) {
+        if (defense === Action.SWORD) {
+            target.nextTurnParalyze = true;
+            log += `⚡ ${this.playerLabel(actor)} 的电刀压制了 ${this.playerLabel(target)} 的普通刀，并造成麻痹。\n`;
+        } else if (defense === Action.CHARGE) {
+            damage = 1;
+        } else if ([Action.ICE_SWORD, Action.ELEC_SWORD].includes(defense)) {
+            target.nextTurnParalyze = true;
+            log += `⚡ ${this.playerLabel(actor)} 的电刀干扰了 ${this.playerLabel(target)} 的【${this.getActionName(defense)}】，造成麻痹。\n`;
+        } else if (defense === Action.BARRIER) {
+            target.barrierCount -= 1;
+            if (target.role === 'METAL_WARRIOR') {
+                target.swordCount += 1;
+                if (target.swordState === 'BROKEN') target.swordState = 'NORMAL';
+            }
+            log += `💥⚡ ${this.playerLabel(actor)} 的电刀击碎了 ${this.playerLabel(target)} 的 1 层屏障，麻痹电流被屏障吸收。\n`;
+            return log;
+        }
+    }
+
+    if (damage > 0) {
+        target.hp -= damage;
+        log += `💥 ${this.playerLabel(actor)} 的【${this.getActionName(action)}】命中 ${this.playerLabel(target)}，造成 ${damage} 点伤害。\n`;
+    } else if (!log) {
+        log += `⚔ ${this.playerLabel(actor)} 的【${this.getActionName(action)}】未造成有效伤害。\n`;
+    }
+    return log;
+};
+
+Game.prototype.finishTeamRound = function(log) {
+    this.getPlayers().forEach(player => {
+        player.isParalyzed = false;
+        if (player.nextTurnParalyze) {
+            player.isParalyzed = true;
+            player.nextTurnParalyze = false;
+        }
+        player.currentAction = null;
+        player.currentTarget = null;
+    });
+    this.pendingHumanIndex = 0;
+    this.battleResult = null;
+
+    if (this.gameMode === 'ffa') {
+        const alivePlayers = this.alive(this.getPlayers());
+        const playerAlive = this.playerA.hp > 0;
+        const cpuAlive = this.alive(this.cpuTeam()).length > 0;
+        if (!playerAlive && !cpuAlive) {
+            this.battleResult = { A: 'defeat', B: 'defeat', C: 'defeat', D: 'defeat' };
+            log += '\n💀 【平局】四人乱斗无人幸存！';
+            this.showEndActions();
+        } else if (!playerAlive) {
+            this.battleResult = { A: 'defeat' };
+            this.cpuTeam().forEach(cpu => { this.battleResult[cpu.id] = cpu.hp > 0 ? 'victory' : 'defeat'; });
+            log += '\n🏆 【游戏结束】你在四人乱斗中败北。';
+            this.showEndActions();
+        } else if (playerAlive && !cpuAlive) {
+            this.battleResult = { A: 'victory', B: 'defeat', C: 'defeat', D: 'defeat' };
+            log += `\n🏆 【游戏结束】${this.playerA.name} 成为四人乱斗最后的胜者！`;
+            this.showEndActions();
+        } else if (alivePlayers.length === 1) {
+            const winner = alivePlayers[0];
+            this.battleResult = {};
+            this.getPlayers().forEach(player => { this.battleResult[player.id] = player === winner ? 'victory' : 'defeat'; });
+            log += `\n🏆 【游戏结束】${this.playerLabel(winner)} 成为四人乱斗最后的胜者！`;
+            this.showEndActions();
+        }
+        this.roundLog = log;
+        this.updateUI();
+        return;
+    }
+
+    const humansAlive = this.alive(this.humanTeam()).length > 0;
+    const cpusAlive = this.alive(this.cpuTeam()).length > 0;
+    if (!humansAlive && !cpusAlive) {
+        this.battleResult = { A: 'defeat', C: 'defeat', B: 'defeat', D: 'defeat' };
+        log += '\n💀 【平局】双方队伍同归于尽！';
+        this.showEndActions();
+    } else if (!humansAlive) {
+        this.battleResult = { A: 'defeat', C: 'defeat', B: 'victory', D: 'victory' };
+        log += '\n🏆 【游戏结束】CPU 队伍获得胜利！';
+        this.showEndActions();
+    } else if (!cpusAlive) {
+        this.battleResult = { A: 'victory', C: 'victory', B: 'defeat', D: 'defeat' };
+        log += `\n🏆 【游戏结束】${this.playerA.name} 的队伍获得胜利！`;
+        this.showEndActions();
+    }
+    this.roundLog = log;
+    this.updateUI();
+    this.continueCpuOnlyRound();
+};
+
 // 绑定故事界面的交互事件及启动游戏
 document.addEventListener('DOMContentLoaded', () => {
     const loadingScreen = document.getElementById('loading-screen');
@@ -3592,9 +3897,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('img[src]').forEach(img => addUrl(img.getAttribute('src')));
         Object.values(roleProfiles).forEach(profile => addUrl(profile.image));
         [
-            'qizongmap.png',
-            'icon.jpg',
-            'assets/images/arane 1.webp',
+            'qizongmap.webp',
+            'icon.webp',
+            'assets/images/map/ancient-colosseum-arena-background.webp',
             'assets/images/map/ancient-colosseum-arena-background.webp',
             'assets/images/map/ancient-colosseum-marble-sci-fi-background.webp',
             'assets/images/map/chinese-arena-battle-background-lineart.webp',
@@ -3662,19 +3967,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     document.querySelectorAll('.map-hotspot').forEach(hotspot => {
-        hotspot.onclick = (e) => {
-            const factionId = e.target.dataset.faction;
+        hotspot.onclick = (event) => {
+            const factionId = event.currentTarget.dataset.faction;
             const lore = factionLore[factionId];
-            if (lore) {
-                factionTitle.innerText = lore.name;
-                factionDesc.innerText = lore.desc;
-                factionModal.classList.remove('hidden');
-                factionModal.style.display = 'flex';
-            }
+            if (!lore) return;
+            factionTitle.innerText = lore.name;
+            factionDesc.innerText = lore.desc;
+            factionModal.classList.remove('hidden');
+            factionModal.style.display = 'flex';
         };
     });
 
-    // ================= 玩法介绍（Tutorial）逻辑 =================
     const tutModal = document.getElementById('tutorial-modal');
     const showTutBtn = document.getElementById('show-tutorial-btn');
     const tutCloseBtn = document.getElementById('tut-close-btn');
@@ -3718,20 +4021,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (showTutBtn) {
         showTutBtn.onclick = () => {
-            currentTutStep = 0; updateTutStep();
-            tutModal.classList.remove('hidden'); tutModal.style.display = 'flex';
+            currentTutStep = 0;
+            updateTutStep();
+            tutModal.classList.remove('hidden');
+            tutModal.style.display = 'flex';
         };
     }
     if (tutCloseBtn) tutCloseBtn.onclick = () => { tutModal.style.display = 'none'; };
     if (tutNextBtn) {
         tutNextBtn.onclick = () => {
-            if (currentTutStep < tutSteps.length - 1) { currentTutStep++; updateTutStep(); } 
-            else { tutModal.style.display = 'none'; document.getElementById('skip-story-btn').click(); }
+            if (currentTutStep < tutSteps.length - 1) {
+                currentTutStep += 1;
+                updateTutStep();
+            } else {
+                tutModal.style.display = 'none';
+                document.getElementById('skip-story-btn')?.click();
+            }
         };
     }
     if (tutPrevBtn) {
         tutPrevBtn.onclick = () => {
-            if (currentTutStep > 0) { currentTutStep--; updateTutStep(); }
+            if (currentTutStep > 0) {
+                currentTutStep -= 1;
+                updateTutStep();
+            }
         };
     }
 

@@ -64,7 +64,7 @@
             </div>
             
             <div class="map-container">
-                <img src="qizongmap.png" alt="大陆战争地图" class="world-map">
+                <img src="qizongmap.webp" alt="大陆战争地图" class="world-map">
                 <div class="map-hotspot" data-faction="cruxstar" style="top: 5%; left: 35%; width: 30%; height: 40%;"></div>
                 <div class="map-hotspot" data-faction="heshen" style="top: 25%; left: 5%; width: 30%; height: 45%;"></div>
                 <div class="map-hotspot" data-faction="naya" style="top: 20%; left: 65%; width: 30%; height: 50%;"></div>
@@ -111,6 +111,17 @@
                 <p>3. 冰刀和电刀专门用于对抗火冲与狂雷：冰刀造成 1 点伤害，电刀造成麻痹。</p>
                 <p>4. 其余技能规则保持不变。</p>
                 <button id="sudden-mode-close-btn" class="start-btn" type="button">确认</button>
+            </div>
+        </div>
+
+        <div id="battle-return-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel battle-return-panel" role="dialog" aria-modal="true" aria-labelledby="battle-return-title">
+                <h2 id="battle-return-title">返回选择人物？</h2>
+                <p>当前对局将结束，未完成的回合不会保存。</p>
+                <div class="battle-return-actions">
+                    <button id="battle-return-cancel-btn" class="start-btn battle-return-cancel" type="button">继续对局</button>
+                    <button id="battle-return-confirm-btn" class="start-btn battle-return-confirm" type="button">确认返回</button>
+                </div>
             </div>
         </div>
 
@@ -282,7 +293,10 @@
 
         <!-- ================= 操作区 ================= -->
         <div id="control-panel">
-            <div class="control-header">请选择本回合招式</div>
+            <div class="control-header">
+                <span>请选择本回合招式</span>
+                <button id="battle-return-btn" class="battle-return-btn" type="button">返回选人</button>
+            </div>
             
             <div id="actions-a" class="action-grid">
                 <button class="action-btn" data-action="CHARGE">集气</button>

@@ -63,7 +63,7 @@ body {
     box-sizing: border-box;
     background:
         linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.64)),
-        url("icon.jpg") center / cover no-repeat;
+        url("icon.webp") center / cover no-repeat;
 }
 .loading-title {
     width: 100%;
@@ -188,7 +188,7 @@ body {
 .menu-screen {
     background:
         linear-gradient(rgba(8, 10, 15, 0.76), rgba(8, 10, 15, 0.94)),
-        url("qizongmap.png") center / cover;
+        url("qizongmap.webp") center / cover;
     padding: 24px;
     box-sizing: border-box;
 }
@@ -360,7 +360,7 @@ body {
     padding: 28px 18px 22px;
     background:
         linear-gradient(rgba(8, 10, 15, 0.82), rgba(8, 10, 15, 0.96)),
-        url("qizongmap.png") center / cover;
+        url("qizongmap.webp") center / cover;
 }
 .role-screen-header { width: 100%; text-align: center; }
 .role-screen-kicker {
@@ -542,7 +542,7 @@ body {
     z-index: 1002;
     background:
         linear-gradient(180deg, rgba(10, 12, 24, 0.92), rgba(8, 6, 14, 0.96)),
-        url("assets/images/arane 1.webp") center bottom / cover no-repeat;
+        url("assets/images/map/ancient-colosseum-arena-background.webp") center bottom / cover no-repeat;
     align-items: stretch;
     justify-content: center;
 }
@@ -716,12 +716,12 @@ body {
 .tut-item { display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #aaa; }
 .tut-icon { font-size: 32px; margin-bottom: 5px; }
 .tut-sprite {
-    width: 128px;
-    height: 128px;
-    flex: 0 0 128px;
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
     background-repeat: no-repeat;
-    background-size: 640px 384px;
-    background-image: url("assets/images/priest sprite transparent.webp");
+    background-size: 700px 700px;
+    background-image: url("assets/images/priest/priest_idle_sprite_sheet.webp");
     filter: drop-shadow(0 10px 10px rgba(0,0,0,0.35));
 }
 .tut-demo-character .tut-sprite {
@@ -729,12 +729,21 @@ body {
     transform-origin: bottom center;
 }
 .tut-sprite.charge {
-    background-image: url("assets/images/priest sprite 2 transparent.webp");
-    animation: priest-charge-frames 500ms linear infinite;
+    background-image: url("assets/images/priest/priest_charge_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
 }
-.tut-sprite.attack { animation: priest-attack-frames 500ms linear infinite; }
-.tut-sprite.shield { animation: priest-shield-frames 500ms linear infinite; }
-.tut-sprite.idle { animation: priest-idle-frames 500ms linear infinite; }
+.tut-sprite.attack {
+    background-image: url("assets/images/priest/priest_attack_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
+}
+.tut-sprite.shield {
+    background-image: url("assets/images/priest/priest_defense_sprite_sheet_clean.webp");
+    background-size: 840px 560px;
+    animation: barbarian-sheet-24-frames 1200ms step-end infinite;
+}
+.tut-sprite.idle { animation: barbarian-idle-frames 1250ms step-end infinite; }
 .tut-skill-card {
     min-width: 70px;
     padding: 8px 10px;
@@ -817,7 +826,7 @@ body {
 /* ================= 战斗画面区 ================= */
 #battle-scene {
     flex: 4.5;
-    background-image: var(--battle-background-image, url('assets/images/arane 1.webp'));
+    background-image: var(--battle-background-image, url('assets/images/map/ancient-colosseum-arena-background.webp'));
     background-size: cover;             /* 让图片按比例铺满整个战斗区 */
     background-position: center bottom; /* 让图片对齐底部，这样地板的透视感最好 */
     background-repeat: no-repeat;       /* 防止图片重复拼接 */
@@ -1718,7 +1727,36 @@ body {
     flex: 4; background: #222; padding: 15px 12px 25px 12px;
     display: flex; flex-direction: column; justify-content: center;
 }
-.control-header { text-align: center; color: #00ffcc; font-size: 15px; font-weight: bold; margin-bottom: 12px; }
+.control-header {
+    position: relative;
+    min-height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00ffcc;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+.battle-return-btn {
+    position: absolute;
+    right: 0;
+    min-height: 30px;
+    padding: 5px 10px;
+    color: #fff7d2;
+    font-size: 12px;
+    font-weight: 800;
+    background: #2e587b;
+    border: 2px solid #8ec7e6;
+    border-radius: 6px;
+    box-shadow: 0 3px 0 #18364e;
+    cursor: pointer;
+}
+.battle-return-btn:active { transform: translateY(3px); box-shadow: none; }
+.battle-return-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.battle-return-actions .start-btn { width: 100%; min-height: 42px; padding: 8px; }
+.battle-return-cancel { background: #2e7dbd; }
+.battle-return-confirm { background: #c84f45; }
 .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .sub-actions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
 
