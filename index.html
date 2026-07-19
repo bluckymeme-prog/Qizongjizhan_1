@@ -89,7 +89,7 @@
             <div class="map-hint">点击地图上的国家查看详细背景</div>
             
             <div class="action-btn-group" style="display: flex; gap: 20px; margin-top: 15px;">
-                <button id="show-tutorial-btn" class="start-btn" style="background-color: #4CAF50; color: white;">玩法介绍</button>
+                <button id="show-career-btn" class="start-btn" style="background-color: #4CAF50; color: white;">职业介绍</button>
                 <button id="skip-story-btn" class="start-btn">进入世界</button>
             </div>
         </div>
@@ -165,7 +165,7 @@
         <div id="sudden-mode-modal" class="overlay hidden update-modal" aria-hidden="true">
             <div class="update-panel">
                 <h2>突然死亡模式</h2>
-                <p>1. 双方开局均为 1 点生命、3 点气。</p>
+                <p>1. 基础开局为 1 点生命、3 点气；野蛮人额外获得 1 点生命，但少 1 点气。</p>
                 <p>2. 普通刀也会消耗 1 点气。</p>
                 <p>3. 冰刀和电刀专门用于对抗火冲与狂雷：冰刀造成 1 点伤害，电刀造成麻痹。</p>
                 <p>4. 其余技能规则保持不变。</p>
@@ -311,6 +311,7 @@
                     <div class="status-line buffs">
                         <span id="barrier-a"></span>
                         <span id="sword-a"></span>
+                        <span id="metal-points-a"></span>
                         <span id="paralysis-a"></span>
                     </div>
                 </div>
@@ -325,6 +326,7 @@
                     <div class="status-line buffs" style="justify-content: flex-end;">
                         <span id="barrier-b"></span>
                         <span id="sword-b"></span>
+                        <span id="metal-points-b"></span>
                         <span id="paralysis-b"></span>
                     </div>
                 </div>
@@ -370,6 +372,7 @@
                 <!-- 专属技能按钮 -->
                 <button class="action-btn btn-steal" id="steal-btn-a" data-action="STEAL" style="display:none;">神偷</button>
                 <button class="action-btn btn-heal" id="heal-btn-a" data-action="MERCY_DEW" style="display:none;">慈露</button>
+                    <button class="action-btn btn-metal-storm" id="metal-storm-btn-a" data-action="METAL_STORM" style="display:none;">金属风暴（限1次）</button>
             </div>
             
             <div id="sub-actions-a" class="sub-actions-grid hidden">

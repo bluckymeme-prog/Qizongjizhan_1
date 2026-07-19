@@ -2216,6 +2216,8 @@ img {
 
 .btn-holy { background: #d4af37; color: #000; box-shadow: 0 5px 0 #8a701c; }
 .btn-steal { background: #8a2be2; box-shadow: 0 5px 0 #4a148c; }
+.btn-metal-storm { background: #4f5965; color: #f3f7fb; box-shadow: 0 5px 0 #242a31; }
+.metal-points { color: #d7e6ef; font-weight: 800; text-shadow: 0 1px 3px #000; white-space: nowrap; }
 .btn-heal { background: #2E8B57; color: #fff; box-shadow: 0 5px 0 #1B5E20; }
 .btn-ice { background: #2b5797; box-shadow: 0 5px 0 #122b52; }
 .btn-elec { background: #4a148c; box-shadow: 0 5px 0 #280a4d; }
