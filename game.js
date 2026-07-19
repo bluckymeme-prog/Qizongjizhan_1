@@ -3630,10 +3630,12 @@ Game.prototype.resolveTeamRound = function() {
         if (actor.currentAction === Action.STEAL) {
             actor.hasStolen = true;
             const target = actor.currentTarget;
-            if (target?.currentAction === Action.CHARGE) {
+            if (target?.currentAction === Action.CHARGE && !stolenCharge.has(target.id)) {
                 stolenCharge.add(target.id);
                 actor.energy += 1;
                 log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，偷走了 ${this.playerLabel(target)} 正在凝聚的气。\n`;
+            } else if (target?.currentAction === Action.CHARGE) {
+                log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，但这股真气已被其他人抢先偷走。\n`;
             } else {
                 log += `🕶 ${this.playerLabel(actor)} 使用【神偷】，但目标没有集气。\n`;
             }
@@ -3773,6 +3775,10 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
             log += `⚔ ${this.playerLabel(actor)} 与 ${this.playerLabel(target)} 的刀势互相碰撞，未造成伤害。\n`;
             return log;
         }
+        if (defense === Action.FIRE) {
+            log += `🔥 ${this.playerLabel(target)} 的火冲压制了 ${this.playerLabel(actor)} 的普通刀。\n`;
+            return log;
+        }
         if (defense === Action.LIGHTNING) {
             log += `⚡ ${this.playerLabel(target)} 的狂雷压制了 ${this.playerLabel(actor)} 的普通刀。\n`;
             return log;
@@ -3844,7 +3850,10 @@ Game.prototype.applyTeamAttack = function(actor, target, action) {
 };
 
 Game.prototype.finishTeamRound = function(log) {
-    this.getPlayers().forEach(player => {
+    const resolvedPlayers = this.getPlayers();
+    this.rememberResolvedActions(resolvedPlayers);
+    resolvedPlayers.forEach(player => {
+        player.aiRound = (player.aiRound || 0) + 1;
         player.isParalyzed = false;
         if (player.nextTurnParalyze) {
             player.isParalyzed = true;
