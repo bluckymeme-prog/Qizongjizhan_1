@@ -17,7 +17,7 @@
             color: #fff;
         }
     </style>
-    <link rel="stylesheet" href="style.css?v=3.02.1">
+    <link rel="stylesheet" href="style.css?v=3.02.2">
 </head>
 <body>
     
@@ -70,7 +70,7 @@
         </div>
 
         <!-- ================= 故事背景与地图界面 ================= -->
-        <div id="story-screen" class="overlay" style="z-index: 1000; background-color: #729ebf;">
+        <div id="story-screen" class="overlay hidden" style="z-index: 1000; background-color: #729ebf;">
             <div class="story-text">
                 <h2 style="text-align:center; color:#ffcc00; margin-top:0; font-size: 20px;">大陆史诗序章</h2>
                 <p>在这片万物皆以“气”为源的世界里，十字星教以难以置信的速度迅速统一了格里尔大陆的北方。在他们建立的十字星骑士团铁蹄下，信仰的利刃与圣光的威压，迫使各方势力不得不低头臣服，这片格里尔大陆俨然成为了十字星教的领地。</p>
@@ -93,15 +93,41 @@
             </div>
         </div>
         
-        <!-- ================= 主菜单界面 ================= -->
-        <div id="main-menu-screen" class="overlay menu-screen hidden" style="z-index: 999;">
-            <div class="menu-panel">
-                <button class="menu-back-btn" type="button" data-back="story">返回</button>
-                <span class="role-screen-kicker">十字星大赛</span>
-                <h2 class="role-screen-title">进入世界</h2>
-                <button id="pve-menu-btn" class="menu-choice-btn" type="button">人机对决</button>
-                <button id="online-menu-btn" class="menu-choice-btn" type="button">线上真人对决</button>
-                <button id="career-menu-btn" class="menu-choice-btn" type="button">职业介绍</button>
+        <!-- ================= 游戏主界面 ================= -->
+        <div id="main-menu-screen" class="overlay main-home-screen hidden" style="z-index: 999;">
+            <header class="main-home-topbar">
+                <div class="main-player-summary">
+                    <img id="main-player-avatar" src="assets/images/warrior com.webp" alt="玩家头像" decoding="async">
+                    <div>
+                        <small>参赛者</small>
+                        <strong id="main-player-name">无名勇士</strong>
+                    </div>
+                </div>
+                <div class="main-currency-bar" aria-label="玩家货币">
+                    <div class="main-currency"><span aria-hidden="true">●</span><b id="main-coin-count">000</b></div>
+                    <div class="main-currency diamond"><span aria-hidden="true">◆</span><b id="main-diamond-count">000</b></div>
+                    <button id="main-recharge-btn" class="main-recharge-btn" type="button" aria-label="充值钻石" title="充值钻石">+</button>
+                </div>
+            </header>
+
+            <main class="main-hero-display" aria-label="上一次出战角色">
+                <div id="main-hero-sprite" class="main-hero-sprite" role="img" aria-label="战士动画"></div>
+                <div id="main-hero-role-name" class="main-hero-role-name">战士</div>
+            </main>
+
+            <nav class="main-home-actions" aria-label="主界面功能">
+                <button id="main-lore-btn" class="main-home-action" type="button"><span aria-hidden="true">📜</span><b>背景介绍</b></button>
+                <button id="pve-menu-btn" class="main-home-action primary" type="button"><span aria-hidden="true">⚔️</span><b>开始战斗</b></button>
+                <button id="main-tutorial-btn" class="main-home-action" type="button"><span aria-hidden="true">📖</span><b>玩法介绍</b></button>
+                <button id="main-shop-btn" class="main-home-action" type="button"><span aria-hidden="true">🛒</span><b>购物商城</b></button>
+            </nav>
+        </div>
+
+        <div id="main-unavailable-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel" role="dialog" aria-modal="true" aria-labelledby="main-unavailable-title">
+                <h2 id="main-unavailable-title">功能暂未开放</h2>
+                <p id="main-unavailable-message">暂未开放，敬请期待。</p>
+                <button id="main-unavailable-close" class="start-btn" type="button" style="width:100%;">确认</button>
             </div>
         </div>
 
@@ -340,6 +366,6 @@
 
     </div>
 
-    <script src="game.js?v=3.02.1"></script>
+    <script src="game.js?v=3.02.3"></script>
 </body>
 </html>

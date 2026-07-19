@@ -256,6 +256,184 @@ img {
     font-weight: 800;
     cursor: pointer;
 }
+
+/* ================= 游戏主界面 ================= */
+.main-home-screen {
+    isolation: isolate;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+    overflow: hidden;
+    background: #10131a;
+}
+.main-home-screen::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+    z-index: -2;
+    background: url("assets/images/main_screen.webp") center / cover no-repeat;
+    filter: blur(4px);
+    transform: scale(1.04);
+}
+.main-home-screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(5, 8, 13, 0.48), rgba(5, 7, 12, 0.12) 48%, rgba(5, 7, 12, 0.82));
+}
+.main-home-topbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    z-index: 2;
+}
+.main-player-summary {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+.main-player-summary img {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    object-fit: cover;
+    object-position: center top;
+    border: 2px solid #f2cf68;
+    border-radius: 50%;
+    background: #191d25;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.55);
+}
+.main-player-summary small,
+.main-player-summary strong {
+    display: block;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+}
+.main-player-summary small { color: #d8dbe2; font-size: 10px; }
+.main-player-summary strong {
+    max-width: 122px;
+    overflow: hidden;
+    color: #fff;
+    font-size: 15px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.main-currency-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    min-width: 0;
+}
+.main-currency {
+    min-width: 57px;
+    height: 30px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    box-sizing: border-box;
+    color: #fff;
+    font-size: 12px;
+    background: rgba(11, 14, 20, 0.74);
+    border: 1px solid rgba(255,255,255,0.24);
+    border-radius: 6px;
+}
+.main-currency span { color: #f3c847; font-size: 16px; }
+.main-currency.diamond span { color: #69e5ff; }
+.main-recharge-btn {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    padding: 0;
+    color: #111;
+    font-size: 22px;
+    font-weight: 900;
+    line-height: 26px;
+    background: #f3cf59;
+    border: 1px solid #fff1ad;
+    border-radius: 50%;
+    cursor: pointer;
+}
+.main-hero-display {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    place-items: center;
+    z-index: 1;
+}
+.main-hero-sprite {
+    width: min(92vw, 430px);
+    aspect-ratio: 1;
+    background-repeat: no-repeat;
+    background-size: 700% 700%;
+    background-position: 0 0;
+    filter: drop-shadow(0 18px 15px rgba(0,0,0,0.55));
+    transform: translate(var(--main-sprite-offset-x, 0%), var(--main-sprite-offset-y, -2%));
+}
+.main-hero-role-name {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    padding: 5px 18px;
+    color: #fff4c8;
+    font-size: 14px;
+    font-weight: 900;
+    text-shadow: 0 2px 4px #000;
+    background: rgba(8, 10, 15, 0.68);
+    border: 1px solid rgba(242, 207, 104, 0.7);
+    border-radius: 6px;
+    white-space: nowrap;
+}
+.main-home-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+    z-index: 2;
+}
+.main-home-action {
+    min-width: 0;
+    min-height: 72px;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #fff;
+    background: rgba(14, 17, 24, 0.86);
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 7px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.48);
+    cursor: pointer;
+}
+.main-home-action.primary {
+    color: #17130a;
+    background: #f2c94c;
+    border-color: #fff0a6;
+}
+.main-home-action span { font-size: 23px; line-height: 1; }
+.main-home-action b { font-size: 12px; line-height: 1.2; white-space: nowrap; }
+.main-home-action:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.48); }
+
+@media (max-width: 360px) {
+    .main-home-screen { padding-left: 9px; padding-right: 9px; }
+    .main-player-summary img { width: 42px; height: 42px; flex-basis: 42px; }
+    .main-player-summary strong { max-width: 82px; font-size: 13px; }
+    .main-currency { min-width: 49px; padding: 0 5px; }
+    .main-home-actions { gap: 4px; }
+    .main-home-action { min-height: 66px; }
+    .main-home-action span { font-size: 20px; }
+    .main-home-action b { font-size: 11px; }
+}
 .career-screen {
     gap: 14px;
 }
@@ -1021,16 +1199,18 @@ img {
     padding: 12px; background: rgba(0, 0, 0, 0.4); z-index: 10;
 }
 #battle-scene.multiplayer-battle {
-    flex: 3.1;
+    flex: 3.7;
 }
 #battle-scene.multiplayer-battle #status-bar {
     padding: 6px 8px;
+    background: transparent;
 }
 #battle-scene.multiplayer-battle .status-team {
     gap: 3px;
 }
 #battle-scene.multiplayer-battle .status-team .player-status {
     padding: 3px 4px;
+    background: transparent;
 }
 #battle-scene.multiplayer-battle .name-label {
     font-size: 12px;
@@ -1047,6 +1227,10 @@ img {
 #battle-scene.multiplayer-battle .unlocked-text,
 #battle-scene.multiplayer-battle .para-text {
     font-size: 10px;
+}
+#battle-scene.multiplayer-battle .name-label,
+#battle-scene.multiplayer-battle .status-line {
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.9);
 }
 #status-bar.ffa-status-bar {
     display: grid;
@@ -1072,6 +1256,10 @@ img {
 #status-bar.ffa-status-bar .status-team:nth-child(2) { grid-column: 3; grid-row: 1; }
 #status-bar.ffa-status-bar .status-team:nth-child(4) { grid-column: 1; grid-row: 2; }
 #status-bar.ffa-status-bar .status-team:nth-child(5) { grid-column: 3; grid-row: 2; }
+#status-bar.ffa-status-bar .status-team:nth-child(4),
+#status-bar.ffa-status-bar .status-team:nth-child(5) {
+    transform: translateY(10px);
+}
 #status-bar.ffa-status-bar .player-status {
     padding: 5px;
 }
@@ -1174,7 +1362,7 @@ img {
     padding: 0 18px 18px;
 }
 #battle-scene.multiplayer-battle .stage-area.team-stage {
-    padding: 0 12px 8px;
+    padding: 0 42px 8px;
 }
 .team-formation {
     display: flex;
@@ -1187,11 +1375,14 @@ img {
     gap: 0;
 }
 #battle-scene.multiplayer-battle .character-box {
-    height: 106px;
+    height: 116px;
 }
 #battle-scene.multiplayer-battle .avatar {
-    scale: 0.76;
+    scale: 0.84;
     transform-origin: center bottom;
+}
+#battle-scene.multiplayer-battle .avatar[data-sprite-state]:not([data-sprite-state="idle"]) {
+    scale: 0.72;
 }
 #battle-scene.multiplayer-battle .p2-avatar.priest-sprite,
 #battle-scene.multiplayer-battle .p2-avatar.warrior-sprite,
@@ -1199,7 +1390,10 @@ img {
 #battle-scene.multiplayer-battle .p2-avatar.metal-sprite,
 #battle-scene.multiplayer-battle .p2-avatar.barbarian-sprite,
 #battle-scene.multiplayer-battle .p2-avatar.knight-sprite {
-    scale: -0.76 0.76;
+    scale: -0.84 0.84;
+}
+#battle-scene.multiplayer-battle .p2-avatar[data-sprite-state]:not([data-sprite-state="idle"]) {
+    scale: -0.72 0.72;
 }
 .team-formation .character-box:nth-child(2) {
     transform: translateX(20px);
@@ -1876,6 +2070,18 @@ img {
     flex: 1.5; background: #111; padding: 10px 15px; box-sizing: border-box;
     border-bottom: 2px solid #333; overflow-y: auto; display: flex; flex-direction: column;
     min-height: 0;
+}
+#battle-scene.multiplayer-battle + #log-container {
+    flex: 0.8;
+    min-height: 58px;
+    padding: 5px 12px;
+}
+#battle-scene.multiplayer-battle + #log-container .log-header {
+    margin-bottom: 1px;
+}
+#battle-scene.multiplayer-battle + #log-container .log-text {
+    font-size: 12px;
+    line-height: 1.35;
 }
 .log-header { text-align: center; color: #aaa; font-size: 12px; margin-bottom: 5px; }
 .log-text { font-size: 14px; line-height: 1.6; color: #ddd; white-space: pre-line; flex: 1; }

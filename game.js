@@ -983,6 +983,8 @@ Game.prototype.setOverlay = function(id) {
         el.classList.toggle('hidden', screenId !== id);
         el.style.display = screenId === id ? 'flex' : 'none';
     });
+    if (id === 'main-menu-screen') this.updateMainHomeScreen?.();
+    else this.stopMainHeroAnimation?.();
 };
 
 Game.prototype.showUpdateNotice = function() {
@@ -1098,6 +1100,101 @@ Game.prototype.playCareerSprite = function(source, roleName) {
     }, 60);
 };
 
+Game.prototype.readSavedPlayerProfile = function() {
+    try {
+        return {
+            name: localStorage.getItem('qizong.playerName') || '无名勇士',
+            role: localStorage.getItem('qizong.lastRole') || 'WARRIOR',
+            coins: Number(localStorage.getItem('qizong.coins') || 0),
+            diamonds: Number(localStorage.getItem('qizong.diamonds') || 0)
+        };
+    } catch (error) {
+        return { name: '无名勇士', role: 'WARRIOR', coins: 0, diamonds: 0 };
+    }
+};
+
+Game.prototype.savePlayerProfile = function() {
+    try {
+        localStorage.setItem('qizong.playerName', this.playerA.name || '无名勇士');
+        localStorage.setItem('qizong.lastRole', this.playerA.role || 'WARRIOR');
+        if (localStorage.getItem('qizong.coins') === null) localStorage.setItem('qizong.coins', '0');
+        if (localStorage.getItem('qizong.diamonds') === null) localStorage.setItem('qizong.diamonds', '0');
+    } catch (error) {
+        // Private browsing can disable storage; the current session still works.
+    }
+};
+
+Game.prototype.stopMainHeroAnimation = function() {
+    if (!this.mainHeroTimer) return;
+    clearInterval(this.mainHeroTimer);
+    this.mainHeroTimer = null;
+};
+
+Game.prototype.playMainHeroAnimation = function(role) {
+    const sprite = document.getElementById('main-hero-sprite');
+    if (!sprite) return;
+
+    const spriteFiles = {
+        PRIEST: 'priest_com-idle.webp',
+        WARRIOR: 'warrior_com-idle.webp',
+        PALADIN: 'knight_com-idle.webp',
+        ROGUE: 'burglar_com-idle.webp',
+        BARBARIAN: 'barbarian_com-idle.webp',
+        METAL_WARRIOR: 'metal_com-idle.webp'
+    };
+    const offsets = {
+        PRIEST: { x: -4, y: -2 },
+        WARRIOR: { x: -7, y: -1 },
+        PALADIN: { x: -3, y: 0 },
+        ROGUE: { x: -3.5, y: -2 },
+        BARBARIAN: { x: -3.5, y: -1 },
+        METAL_WARRIOR: { x: -5, y: -2 }
+    };
+    const safeRole = spriteFiles[role] ? role : 'WARRIOR';
+    const offset = offsets[safeRole];
+    sprite.style.backgroundImage = `url("assets/images/com_image/${spriteFiles[safeRole]}")`;
+    sprite.style.setProperty('--main-sprite-offset-x', `${offset.x}%`);
+    sprite.style.setProperty('--main-sprite-offset-y', `${offset.y}%`);
+    sprite.setAttribute('aria-label', `${roleProfiles[safeRole].name}动画`);
+
+    this.stopMainHeroAnimation();
+    const columns = 7;
+    let frame = 0;
+    const render = () => {
+        const col = frame % columns;
+        const row = Math.floor(frame / columns);
+        sprite.style.backgroundPosition = `${(col / 6) * 100}% ${(row / 6) * 100}%`;
+    };
+    render();
+    this.mainHeroTimer = setInterval(() => {
+        frame = (frame + 1) % 49;
+        render();
+    }, 80);
+};
+
+Game.prototype.updateMainHomeScreen = function() {
+    const saved = this.readSavedPlayerProfile();
+    const role = roleProfiles[saved.role] ? saved.role : 'WARRIOR';
+    const profile = roleProfiles[role];
+    const name = saved.name || '无名勇士';
+    const formatAmount = value => String(Math.max(0, Number(value) || 0)).padStart(3, '0');
+
+    const avatar = document.getElementById('main-player-avatar');
+    if (avatar) {
+        avatar.src = profile.image;
+        avatar.alt = `${name}的${profile.name}头像`;
+    }
+    const nameEl = document.getElementById('main-player-name');
+    const roleEl = document.getElementById('main-hero-role-name');
+    const coinEl = document.getElementById('main-coin-count');
+    const diamondEl = document.getElementById('main-diamond-count');
+    if (nameEl) nameEl.textContent = name;
+    if (roleEl) roleEl.textContent = profile.name;
+    if (coinEl) coinEl.textContent = formatAmount(saved.coins);
+    if (diamondEl) diamondEl.textContent = formatAmount(saved.diamonds);
+    this.playMainHeroAnimation(role);
+};
+
 Game.prototype.configureRoleSelectionMode = function() {
     const mode = document.getElementById('game-mode')?.value || '1v1';
     const expandedMode = mode === '2v2' || mode === 'ffa';
@@ -1129,6 +1226,28 @@ Game.prototype.initMenuFlow = function() {
     const modeInput = document.getElementById('game-mode');
     const difficultySelect = document.getElementById('cpu-difficulty');
     const roleDifficultySelect = document.getElementById('role-cpu-difficulty');
+    const mainLoreBtn = document.getElementById('main-lore-btn');
+    const mainTutorialBtn = document.getElementById('main-tutorial-btn');
+    const mainShopBtn = document.getElementById('main-shop-btn');
+    const rechargeBtn = document.getElementById('main-recharge-btn');
+    const unavailableModal = document.getElementById('main-unavailable-modal');
+    const unavailableTitle = document.getElementById('main-unavailable-title');
+    const unavailableMessage = document.getElementById('main-unavailable-message');
+    const unavailableClose = document.getElementById('main-unavailable-close');
+    const showUnavailable = (title, message) => {
+        if (!unavailableModal) return;
+        if (unavailableTitle) unavailableTitle.textContent = title;
+        if (unavailableMessage) unavailableMessage.textContent = message;
+        unavailableModal.classList.remove('hidden');
+        unavailableModal.style.display = 'flex';
+        unavailableModal.setAttribute('aria-hidden', 'false');
+    };
+    const closeUnavailable = () => {
+        if (!unavailableModal) return;
+        unavailableModal.classList.add('hidden');
+        unavailableModal.style.display = 'none';
+        unavailableModal.setAttribute('aria-hidden', 'true');
+    };
 
     if (skipBtn) skipBtn.onclick = () => {
         this.setOverlay('main-menu-screen');
@@ -1140,6 +1259,14 @@ Game.prototype.initMenuFlow = function() {
         this.renderCareerScreen();
         this.setOverlay('career-screen');
     };
+    if (mainLoreBtn) mainLoreBtn.onclick = () => this.setOverlay('story-screen');
+    if (mainTutorialBtn) mainTutorialBtn.onclick = () => document.getElementById('show-tutorial-btn')?.click();
+    if (mainShopBtn) mainShopBtn.onclick = () => showUnavailable('购物商城', '购物商城暂未开放，敬请期待。');
+    if (rechargeBtn) rechargeBtn.onclick = () => showUnavailable('钻石充值', '充值页面暂未开放，敬请期待。');
+    if (unavailableClose) unavailableClose.onclick = closeUnavailable;
+    unavailableModal?.addEventListener('click', event => {
+        if (event.target === unavailableModal) closeUnavailable();
+    });
 
     const careerGrid = document.getElementById('career-card-grid');
     const careerModal = document.getElementById('career-detail-modal');
@@ -1198,6 +1325,14 @@ Game.prototype.initGame = function() {
     const difficultySelect = document.getElementById('cpu-difficulty');
     const roleDifficultySelect = document.getElementById('role-cpu-difficulty');
 
+    const savedProfile = this.readSavedPlayerProfile();
+    if (roleProfiles[savedProfile.role]) {
+        this.playerA.role = savedProfile.role;
+        if (roleASelect) roleASelect.value = savedProfile.role;
+    }
+    this.playerA.name = savedProfile.name;
+    if (usernameInput && savedProfile.name !== '无名勇士') usernameInput.value = savedProfile.name;
+
     this.initMenuFlow();
     this.initRoleSelection(roleASelect, roleBSelect, roleCSelect, roleDSelect);
     this.configureRoleSelectionMode();
@@ -1221,6 +1356,7 @@ Game.prototype.initGame = function() {
         this.playerC.role = roleCSelect ? roleCSelect.value : 'WARRIOR';
         this.playerD.role = roleDSelect ? roleDSelect.value : 'WARRIOR';
         this.getPlayers().forEach(player => player.reset());
+        this.savePlayerProfile();
         this.aiDuelStallRounds = 0;
         this._lastResolvedHpTotal = null;
         this.aiDuelLeadId = null;
@@ -3674,7 +3810,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loadingReady = (async () => {
         if (!loadingScreen || !loadingProgressBar) {
-            document.documentElement.classList.remove('app-loading');
             return [];
         }
         const urls = collectInitialAssetUrls();
@@ -3696,9 +3831,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await new Promise(resolve => setTimeout(resolve, 120));
         loadingScreen.classList.add('hidden');
         loadingScreen.style.display = 'none';
-        // Remove the critical first-paint guard only after the loading layer has
-        // already been hidden, so the menu can never flash in front of it.
-        document.documentElement.classList.remove('app-loading');
         return results;
     })();
 
@@ -3809,6 +3941,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadingReady.finally(() => {
-        window.gameInstance = new Game();
+        try {
+            window.gameInstance = new Game();
+            window.gameInstance.setOverlay('main-menu-screen');
+            window.gameInstance.showUpdateNotice();
+        } finally {
+            // Reveal the app only after the real main screen is ready.
+            document.documentElement.classList.remove('app-loading');
+        }
     });
 });
