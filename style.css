@@ -369,7 +369,7 @@ img {
     z-index: 1;
 }
 .main-hero-sprite {
-    width: min(92vw, 430px);
+    width: min(96vw, 480px);
     aspect-ratio: 1;
     background-repeat: no-repeat;
     background-size: 700% 700%;
@@ -391,6 +391,77 @@ img {
     border: 1px solid rgba(242, 207, 104, 0.7);
     border-radius: 6px;
     white-space: nowrap;
+}
+.main-developer-support {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    z-index: 3;
+    width: 68px;
+    min-height: 76px;
+    padding: 7px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #fff8df;
+    font-family: inherit;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    background: rgba(57, 27, 31, 0.88);
+    border: 1px solid #f1c56a;
+    border-radius: 7px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.4);
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+.main-developer-support span { color: #ff8292; font-size: 21px; line-height: 1; }
+.main-developer-support b { font-size: 12px; line-height: 1.25; }
+.main-developer-support:active { transform: translateY(calc(-50% + 3px)); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
+.main-music-toggle,
+.battle-music-toggle {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    color: #fff6c7;
+    font-family: inherit;
+    font-size: 21px;
+    font-weight: 900;
+    line-height: 1;
+    background: rgba(13, 21, 32, 0.82);
+    border: 1px solid #f1c56a;
+    border-radius: 50%;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.42);
+    cursor: pointer;
+}
+.main-music-toggle {
+    position: absolute;
+    top: 78px;
+    right: 10px;
+    z-index: 3;
+    width: 38px;
+    height: 38px;
+}
+.main-music-toggle:active,
+.battle-music-toggle:active { transform: translateY(3px); box-shadow: none; }
+.main-music-toggle.is-muted,
+.battle-music-toggle.is-muted {
+    color: #9aa0a7;
+    background: rgba(45, 47, 51, 0.88);
+    border-color: #777c82;
+    filter: grayscale(1);
+}
+.developer-support-panel { text-align: center; }
+.developer-support-panel p { text-align: center; }
+.developer-support-qrcode {
+    width: min(220px, 68vw);
+    aspect-ratio: 1;
+    display: block;
+    margin: 12px auto 16px;
+    object-fit: contain;
+    background: #fff;
+    border: 2px solid #5b3518;
+    border-radius: 4px;
 }
 .main-home-actions {
     width: 100%;
@@ -433,6 +504,9 @@ img {
     .main-home-action { min-height: 66px; }
     .main-home-action span { font-size: 20px; }
     .main-home-action b { font-size: 11px; }
+    .main-developer-support { right: 6px; width: 60px; min-height: 68px; }
+    .main-developer-support b { font-size: 11px; }
+    .main-music-toggle { top: 72px; right: 6px; width: 34px; height: 34px; font-size: 19px; }
 }
 .career-screen {
     gap: 14px;
@@ -2118,6 +2192,13 @@ img {
     cursor: pointer;
 }
 .battle-return-btn:active { transform: translateY(3px); box-shadow: none; }
+.battle-music-toggle {
+    position: absolute;
+    right: 86px;
+    width: 30px;
+    height: 30px;
+    font-size: 18px;
+}
 .battle-return-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
 .battle-return-actions .start-btn { width: 100%; min-height: 42px; padding: 8px; }
 .battle-return-cancel { background: #2e7dbd; }
@@ -2162,4 +2243,47 @@ img {
 }
 @keyframes paralyze-flash { 0%, 100% { filter: drop-shadow(0 0 2px yellow); } 50% { filter: drop-shadow(0 0 10px yellow); } }
 .icon.paralyzed { animation: paralyze-flash 0.8s infinite alternate; }
+
+/* ================= 杩愯鎬ц兘浼樺寲 ================= */
+html.app-backgrounded * {
+    animation-play-state: paused !important;
+}
+
+@media (max-width: 768px) {
+    .main-home-screen::before {
+        filter: blur(2px);
+        transform: scale(1.02);
+    }
+    .main-hero-sprite,
+    .career-detail-sprite,
+    .avatar {
+        filter: none;
+    }
+    .icon.heart {
+        animation: none;
+    }
+    .energy-circle {
+        box-shadow: 0 0 4px #00e5ff;
+    }
+    .avatar.priest-idle,
+    .avatar.warrior-idle,
+    .avatar.burglar-idle,
+    .avatar.metal-idle,
+    .avatar.barbarian-idle,
+    .avatar.knight-idle {
+        animation-duration: 1700ms;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .icon.heart,
+    .icon.paralyzed,
+    .anim-clash-l,
+    .anim-clash-r,
+    .anim-shatter,
+    .anim-block,
+    .anim-strike {
+        animation: none !important;
+    }
+}
 .hidden { display: none !important; }

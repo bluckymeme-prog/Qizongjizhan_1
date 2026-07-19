@@ -396,27 +396,40 @@ class Game {
         if (!spriteRole) {
             avatar.classList.remove(...spriteClasses);
             avatar.removeAttribute('data-sprite-state');
+            avatar.removeAttribute('data-sprite-role');
             avatar.textContent = fallback;
             return;
         }
 
         const state = result || (player.hp <= 0 ? 'defeat' : this.getCharacterAnimationState(player.role, player.currentAction));
+        const stateClass = `${spriteRole}-${state}`;
+        if (avatar.dataset.spriteRole === spriteRole
+            && avatar.dataset.spriteState === state
+            && avatar.classList.contains(stateClass)) {
+            return;
+        }
+
         avatar.textContent = '';
         avatar.classList.remove(...spriteClasses);
         avatar.classList.add(`${spriteRole}-sprite`);
+        avatar.classList.add(stateClass);
         avatar.setAttribute('aria-label', `${player.name} ${player.getRoleName()}`);
-
-        if (avatar.dataset.spriteState !== state) {
-            void avatar.offsetWidth;
-            avatar.dataset.spriteState = state;
-        }
-        avatar.classList.add(`${spriteRole}-${state}`);
+        avatar.dataset.spriteRole = spriteRole;
+        avatar.dataset.spriteState = state;
     }
 
     updateClassicDuelUI() {
         const pA = this.playerA; const pB = this.playerB;
-        document.getElementById('name-display-a').innerText = `${pA.name} [${pA.getRoleName()}]`;
-        document.getElementById('name-display-b').innerText = `🤖 CPU [${pB.getRoleName()}]`;
+        const setHTML = (id, value) => {
+            const element = document.getElementById(id);
+            if (element && element.innerHTML !== value) element.innerHTML = value;
+        };
+        const setText = (id, value) => {
+            const element = document.getElementById(id);
+            if (element && element.textContent !== value) element.textContent = value;
+        };
+        setText('name-display-a', `${pA.name} [${pA.getRoleName()}]`);
+        setText('name-display-b', `🤖 CPU [${pB.getRoleName()}]`);
         this.updateBattleAvatar(document.querySelector('.p1-avatar'), pA, '🤺', this.battleResult?.playerA);
         this.updateBattleAvatar(document.querySelector('.p2-avatar'), pB, '🤖', this.battleResult?.playerB);
 
@@ -430,17 +443,17 @@ class Game {
         };
         const renderParalysis = (isPara) => isPara ? `<span class="icon paralyzed">⚡</span> <span class="para-text">麻痹中</span>` : `<span class="icon inactive">⚡</span>`;
 
-        document.getElementById('hp-a').innerHTML = renderHP(pA.hp);
-        document.getElementById('energy-a').innerHTML = renderEnergy(pA.energy);
-        document.getElementById('barrier-a').innerHTML = renderBarrier(pA.barrierCount);
-        document.getElementById('sword-a').innerHTML = renderSword(pA.swordCount, pA.swordState);
-        document.getElementById('paralysis-a').innerHTML = renderParalysis(pA.isParalyzed);
+        setHTML('hp-a', renderHP(pA.hp));
+        setHTML('energy-a', renderEnergy(pA.energy));
+        setHTML('barrier-a', renderBarrier(pA.barrierCount));
+        setHTML('sword-a', renderSword(pA.swordCount, pA.swordState));
+        setHTML('paralysis-a', renderParalysis(pA.isParalyzed));
 
-        document.getElementById('hp-b').innerHTML = renderHP(pB.hp);
-        document.getElementById('energy-b').innerHTML = renderEnergy(pB.energy);
-        document.getElementById('barrier-b').innerHTML = renderBarrier(pB.barrierCount);
-        document.getElementById('sword-b').innerHTML = renderSword(pB.swordCount, pB.swordState);
-        document.getElementById('paralysis-b').innerHTML = renderParalysis(pB.isParalyzed);
+        setHTML('hp-b', renderHP(pB.hp));
+        setHTML('energy-b', renderEnergy(pB.energy));
+        setHTML('barrier-b', renderBarrier(pB.barrierCount));
+        setHTML('sword-b', renderSword(pB.swordCount, pB.swordState));
+        setHTML('paralysis-b', renderParalysis(pB.isParalyzed));
 
         // 专属技能按钮显示控制
         const stealBtn = document.getElementById('steal-btn-a');
@@ -450,10 +463,11 @@ class Game {
         healBtn.style.display = pA.role === 'PRIEST' ? 'inline-block' : 'none';
 
         const logText = document.getElementById('log-text');
-        logText.innerText = this.roundLog;
-        
+        const logChanged = logText.textContent !== this.roundLog;
+        if (logChanged) logText.textContent = this.roundLog;
+
         const logContainer = document.getElementById('log-container');
-        logContainer.scrollTop = logContainer.scrollHeight;
+        if (logChanged) logContainer.scrollTop = logContainer.scrollHeight;
 
         const lockA = document.getElementById('lock-status-a'); 
         const lockB = document.getElementById('lock-status-b');
@@ -868,9 +882,10 @@ Game.prototype.updateMatchScoreUI = function() {
         }
         const wins = this.matchScore?.[id.toUpperCase()] || 0;
         score.setAttribute('aria-label', `胜局 ${wins}/2`);
-        score.innerHTML = [0, 1].map(index =>
+        const scoreMarkup = [0, 1].map(index =>
             `<span class="match-score-dot${index < wins ? ' won' : ''}"></span>`
         ).join('');
+        if (score.innerHTML !== scoreMarkup) score.innerHTML = scoreMarkup;
     });
 };
 
@@ -976,6 +991,87 @@ Game.prototype.playerLabel = function(player) {
     return 'CPU';
 };
 
+Game.prototype.initBackgroundMusic = function() {
+    this.backgroundMusic = document.getElementById('background-music');
+    this.musicMode = 'menu';
+    this.currentMusicTrack = '';
+    try {
+        this.musicEnabled = localStorage.getItem('qizong.musicEnabled') !== 'off';
+    } catch (error) {
+        this.musicEnabled = true;
+    }
+    if (!this.backgroundMusic) return;
+
+    this.backgroundMusic.loop = false;
+    this.backgroundMusic.volume = 0.42;
+    this.backgroundMusic.addEventListener('ended', () => {
+        if (this.musicEnabled) this.playBackgroundMusic(this.musicMode, true);
+    });
+
+    document.addEventListener('pointerdown', () => {
+        if (this.musicEnabled) this.playBackgroundMusic(this.musicMode);
+    }, { once: true, capture: true });
+
+    document.addEventListener('visibilitychange', () => {
+        document.documentElement.classList.toggle('app-backgrounded', document.hidden);
+        if (document.hidden) {
+            this.resumeMusicOnVisible = this.musicEnabled && !this.backgroundMusic.paused;
+            this.backgroundMusic.pause();
+        } else if (this.resumeMusicOnVisible) {
+            this.resumeMusicOnVisible = false;
+            this.playBackgroundMusic(this.musicMode);
+        }
+    });
+
+    document.querySelectorAll('#main-music-toggle, #battle-music-toggle').forEach(button => {
+        button.onclick = () => this.toggleBackgroundMusic();
+    });
+    this.updateMusicToggleButtons();
+    this.playBackgroundMusic('menu');
+};
+
+Game.prototype.playBackgroundMusic = function(mode, chooseNewTrack = false) {
+    const audio = this.backgroundMusic;
+    if (!audio || !this.musicEnabled) return;
+    const tracks = mode === 'battle'
+        ? ['music/backgroud_music/battle_1.mp3', 'music/backgroud_music/battle_2.mp3', 'music/backgroud_music/battle_3.mp3']
+        : ['music/backgroud_music/menu_1.mp3', 'music/backgroud_music/menu_2.mp3', 'music/backgroud_music/menu_3.mp3'];
+    const modeChanged = this.musicMode !== mode;
+    this.musicMode = mode;
+
+    if (modeChanged || chooseNewTrack || !this.currentMusicTrack) {
+        const choices = tracks.filter(track => track !== this.currentMusicTrack);
+        this.currentMusicTrack = choices[Math.floor(Math.random() * choices.length)] || tracks[0];
+        audio.src = this.currentMusicTrack;
+    }
+
+    const playback = audio.play();
+    if (playback?.catch) playback.catch(() => {});
+    this.updateMusicToggleButtons();
+};
+
+Game.prototype.toggleBackgroundMusic = function() {
+    this.musicEnabled = !this.musicEnabled;
+    try {
+        localStorage.setItem('qizong.musicEnabled', this.musicEnabled ? 'on' : 'off');
+    } catch (error) {
+        // Keep the setting for this session when storage is unavailable.
+    }
+    if (this.musicEnabled) this.playBackgroundMusic(this.musicMode);
+    else this.backgroundMusic?.pause();
+    this.updateMusicToggleButtons();
+};
+
+Game.prototype.updateMusicToggleButtons = function() {
+    const enabled = this.musicEnabled !== false;
+    document.querySelectorAll('#main-music-toggle, #battle-music-toggle').forEach(button => {
+        button.classList.toggle('is-muted', !enabled);
+        button.setAttribute('aria-pressed', String(enabled));
+        button.setAttribute('aria-label', enabled ? '关闭背景音乐' : '开启背景音乐');
+        button.title = enabled ? '关闭背景音乐' : '开启背景音乐';
+    });
+};
+
 Game.prototype.setOverlay = function(id) {
     ['story-screen', 'main-menu-screen', 'pve-mode-screen', 'career-screen', 'login-screen'].forEach(screenId => {
         const el = document.getElementById(screenId);
@@ -985,6 +1081,7 @@ Game.prototype.setOverlay = function(id) {
     });
     if (id === 'main-menu-screen') this.updateMainHomeScreen?.();
     else this.stopMainHeroAnimation?.();
+    this.playBackgroundMusic?.('menu');
 };
 
 Game.prototype.showUpdateNotice = function() {
@@ -1095,9 +1192,10 @@ Game.prototype.playCareerSprite = function(source, roleName) {
 
     renderFrame();
     this.careerSpriteTimer = setInterval(() => {
+        if (document.hidden) return;
         cursor = (cursor + 1) % frames.length;
         renderFrame();
-    }, 60);
+    }, 75);
 };
 
 Game.prototype.readSavedPlayerProfile = function() {
@@ -1167,6 +1265,7 @@ Game.prototype.playMainHeroAnimation = function(role) {
     };
     render();
     this.mainHeroTimer = setInterval(() => {
+        if (document.hidden) return;
         frame = (frame + 1) % 49;
         render();
     }, 80);
@@ -1230,6 +1329,9 @@ Game.prototype.initMenuFlow = function() {
     const mainTutorialBtn = document.getElementById('main-tutorial-btn');
     const mainShopBtn = document.getElementById('main-shop-btn');
     const rechargeBtn = document.getElementById('main-recharge-btn');
+    const developerSupportBtn = document.getElementById('main-developer-support-btn');
+    const developerSupportModal = document.getElementById('developer-support-modal');
+    const developerSupportClose = document.getElementById('developer-support-close');
     const unavailableModal = document.getElementById('main-unavailable-modal');
     const unavailableTitle = document.getElementById('main-unavailable-title');
     const unavailableMessage = document.getElementById('main-unavailable-message');
@@ -1263,6 +1365,22 @@ Game.prototype.initMenuFlow = function() {
     if (mainTutorialBtn) mainTutorialBtn.onclick = () => document.getElementById('show-tutorial-btn')?.click();
     if (mainShopBtn) mainShopBtn.onclick = () => showUnavailable('购物商城', '购物商城暂未开放，敬请期待。');
     if (rechargeBtn) rechargeBtn.onclick = () => showUnavailable('钻石充值', '充值页面暂未开放，敬请期待。');
+    if (developerSupportBtn) developerSupportBtn.onclick = () => {
+        if (!developerSupportModal) return;
+        developerSupportModal.classList.remove('hidden');
+        developerSupportModal.style.display = 'flex';
+        developerSupportModal.setAttribute('aria-hidden', 'false');
+    };
+    const closeDeveloperSupport = () => {
+        if (!developerSupportModal) return;
+        developerSupportModal.classList.add('hidden');
+        developerSupportModal.style.display = 'none';
+        developerSupportModal.setAttribute('aria-hidden', 'true');
+    };
+    if (developerSupportClose) developerSupportClose.onclick = closeDeveloperSupport;
+    developerSupportModal?.addEventListener('click', event => {
+        if (event.target === developerSupportModal) closeDeveloperSupport();
+    });
     if (unavailableClose) unavailableClose.onclick = closeUnavailable;
     unavailableModal?.addEventListener('click', event => {
         if (event.target === unavailableModal) closeUnavailable();
@@ -1315,6 +1433,7 @@ Game.prototype.initMenuFlow = function() {
 };
 
 Game.prototype.initGame = function() {
+    this.initBackgroundMusic();
     const loginScreen = document.getElementById('login-screen');
     const startBtn = document.getElementById('start-game-btn');
     const usernameInput = document.getElementById('username-input');
@@ -1906,6 +2025,7 @@ Game.prototype.returnToRoleSelect = function() {
 
 Game.prototype.startGame = function() {
     this.clearBattleTimers();
+    this.playBackgroundMusic?.('battle', true);
     this.renderBattleLayout();
     this.applyRandomBattleBackground();
     this.bindActionEvents();
@@ -3248,6 +3368,13 @@ Game.prototype.updateUI = function() {
         return result;
     }
 
+    const setHTML = (element, value) => {
+        if (element && element.innerHTML !== value) element.innerHTML = value;
+    };
+    const setText = (element, value) => {
+        if (element && element.textContent !== value) element.textContent = value;
+    };
+
     const renderHP = hp => hp <= 0
         ? '<span style="font-size:18px;">💀</span>'
         : '<span class="icon heart">❤️</span>'.repeat(hp);
@@ -3272,12 +3399,12 @@ Game.prototype.updateUI = function() {
         const id = player.id.toLowerCase();
         const name = document.getElementById(`name-display-${id}`);
         if (!name) return;
-        name.innerText = `${this.playerLabel(player)} [${player.getRoleName()}]`;
-        document.getElementById(`hp-${id}`).innerHTML = renderHP(player.hp);
-        document.getElementById(`energy-${id}`).innerHTML = renderEnergy(player.energy);
-        document.getElementById(`barrier-${id}`).innerHTML = renderBarrier(player.barrierCount);
-        document.getElementById(`sword-${id}`).innerHTML = renderSword(player.swordCount, player.swordState);
-        document.getElementById(`paralysis-${id}`).innerHTML = renderParalysis(player.isParalyzed);
+        setText(name, `${this.playerLabel(player)} [${player.getRoleName()}]`);
+        setHTML(document.getElementById(`hp-${id}`), renderHP(player.hp));
+        setHTML(document.getElementById(`energy-${id}`), renderEnergy(player.energy));
+        setHTML(document.getElementById(`barrier-${id}`), renderBarrier(player.barrierCount));
+        setHTML(document.getElementById(`sword-${id}`), renderSword(player.swordCount, player.swordState));
+        setHTML(document.getElementById(`paralysis-${id}`), renderParalysis(player.isParalyzed));
         const avatar = document.querySelector(`.avatar-${id}`);
         if (avatar) this.updateBattleAvatar(avatar, player, player.id === 'A' ? 'Player' : 'CPU', this.battleResult?.[player.id]);
         const lock = document.getElementById(`lock-status-${id}`);
@@ -3290,9 +3417,10 @@ Game.prototype.updateUI = function() {
     });
 
     const log = document.getElementById('log-text');
-    if (log) log.innerText = this.roundLog;
+    const logChanged = !!log && log.textContent !== this.roundLog;
+    if (logChanged) log.textContent = this.roundLog;
     const logContainer = document.getElementById('log-container');
-    if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
+    if (logChanged && logContainer) logContainer.scrollTop = logContainer.scrollHeight;
 
     const actor = this.currentHumanActor();
     const steal = document.getElementById('steal-btn-a');
@@ -3778,15 +3906,25 @@ document.addEventListener('DOMContentLoaded', () => {
             urls.add(new URL(rawUrl, window.location.href).href);
         };
 
-        // Only block on images visible before the player reaches the menu.
-        // Loading every CSS sprite sheet here made the GitHub Pages first visit
-        // download nearly 30 MB before the game could open.
-        document.querySelectorAll('#loading-screen img[src], #story-screen img[src]')
+        // Block only on assets required by the loading layer and the real lobby.
+        // Story, tutorial and battle assets remain lazy and load when opened.
+        document.querySelectorAll('#loading-screen img[src], #main-menu-screen img[src]')
             .forEach(img => addUrl(img.getAttribute('src')));
-        [
-            'qizongmap.webp',
-            'icon.webp'
-        ].forEach(addUrl);
+        let savedRole = 'WARRIOR';
+        try {
+            savedRole = localStorage.getItem('qizong.lastRole') || savedRole;
+        } catch (error) {
+            // Storage can be unavailable in strict privacy modes.
+        }
+        const lobbySprites = {
+            PRIEST: 'priest_com-idle.webp', WARRIOR: 'warrior_com-idle.webp',
+            PALADIN: 'knight_com-idle.webp', ROGUE: 'burglar_com-idle.webp',
+            BARBARIAN: 'barbarian_com-idle.webp', METAL_WARRIOR: 'metal_com-idle.webp'
+        };
+        addUrl('icon.webp');
+        addUrl('assets/images/main_screen.webp');
+        if (roleProfiles[savedRole]) addUrl(roleProfiles[savedRole].image);
+        if (lobbySprites[savedRole]) addUrl(`assets/images/com_image/${lobbySprites[savedRole]}`);
 
         return [...urls];
     };

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>气宗极战网页端_内测版</title>
     <link rel="preload" href="icon.webp" as="image" type="image/webp" fetchpriority="high">
-    <link rel="preload" href="qizongmap.webp" as="image" type="image/webp" fetchpriority="high">
+    <link rel="preload" href="assets/images/main_screen.webp" as="image" type="image/webp" fetchpriority="high">
     <style>
         html.app-loading body { margin: 0; overflow: hidden; background: #000; }
         html.app-loading #game-container > :not(#loading-screen) { visibility: hidden !important; }
@@ -17,11 +17,12 @@
             color: #fff;
         }
     </style>
-    <link rel="stylesheet" href="style.css?v=3.02.2">
+    <link rel="stylesheet" href="style.css?v=3.02.6">
 </head>
 <body>
     
     <div id="game-container">
+        <audio id="background-music" preload="none"></audio>
 
         <!-- ================= 初始加载界面 ================= -->
         <div id="loading-screen" class="overlay loading-screen">
@@ -78,7 +79,7 @@
             </div>
             
             <div class="map-container">
-                <img src="qizongmap.webp" alt="大陆战争地图" class="world-map" decoding="async" fetchpriority="high">
+                <img src="qizongmap.webp" alt="大陆战争地图" class="world-map" loading="lazy" decoding="async" fetchpriority="low">
                 <div class="map-hotspot" data-faction="cruxstar" style="top: 5%; left: 35%; width: 30%; height: 40%;"></div>
                 <div class="map-hotspot" data-faction="heshen" style="top: 25%; left: 5%; width: 30%; height: 45%;"></div>
                 <div class="map-hotspot" data-faction="naya" style="top: 20%; left: 65%; width: 30%; height: 50%;"></div>
@@ -115,6 +116,12 @@
                 <div id="main-hero-role-name" class="main-hero-role-name">战士</div>
             </main>
 
+            <button id="main-developer-support-btn" class="main-developer-support" type="button" aria-label="支持开发者" title="支持开发者">
+                <span aria-hidden="true">♥</span>
+                <b>支持开发者</b>
+            </button>
+            <button id="main-music-toggle" class="main-music-toggle" type="button" aria-label="关闭背景音乐" title="关闭背景音乐" aria-pressed="true">♪</button>
+
             <nav class="main-home-actions" aria-label="主界面功能">
                 <button id="main-lore-btn" class="main-home-action" type="button"><span aria-hidden="true">📜</span><b>背景介绍</b></button>
                 <button id="pve-menu-btn" class="main-home-action primary" type="button"><span aria-hidden="true">⚔️</span><b>开始战斗</b></button>
@@ -128,6 +135,15 @@
                 <h2 id="main-unavailable-title">功能暂未开放</h2>
                 <p id="main-unavailable-message">暂未开放，敬请期待。</p>
                 <button id="main-unavailable-close" class="start-btn" type="button" style="width:100%;">确认</button>
+            </div>
+        </div>
+
+        <div id="developer-support-modal" class="overlay hidden update-modal" aria-hidden="true">
+            <div class="update-panel developer-support-panel" role="dialog" aria-modal="true" aria-labelledby="developer-support-title">
+                <h2 id="developer-support-title">支持开发者</h2>
+                <p>感谢您的支持，请关注我的公众号（给个点赞打赏吧！：）</p>
+                <img class="developer-support-qrcode" src="qrcode_.jpg" alt="开发者公众号二维码" loading="lazy" decoding="async">
+                <button id="developer-support-close" class="start-btn" type="button" style="width:100%;">关闭</button>
             </div>
         </div>
 
@@ -338,6 +354,7 @@
         <div id="control-panel">
             <div class="control-header">
                 <span>请选择本回合招式</span>
+                <button id="battle-music-toggle" class="battle-music-toggle" type="button" aria-label="关闭背景音乐" title="关闭背景音乐" aria-pressed="true">♪</button>
                 <button id="battle-return-btn" class="battle-return-btn" type="button">返回选人</button>
             </div>
             
@@ -366,6 +383,6 @@
 
     </div>
 
-    <script src="game.js?v=3.02.3"></script>
+    <script src="game.js?v=3.02.6"></script>
 </body>
 </html>
